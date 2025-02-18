@@ -1,0 +1,187 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/virtual/virtual",
+			"style": {
+				"navigationBarTitleText": "绿宝"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "主页"
+			}
+		},
+		{
+			"path": "pages/share/share",
+			"style": {
+				"navigationBarTitleText": "分享"
+			}
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/video/video",
+			"style": {
+				"navigationBarTitleText": "视频直播"
+			}
+		},
+		{
+			"path": "pages/dataShow/dataShow",
+			"style": {
+				"navigationBarTitleText": "实时数据"
+			}
+		}, {
+			"path": "pages/edu-main/edu-main",
+			"style": {
+				"navigationBarTitleText": "学习中心"
+			}
+		},
+		{
+			"path": "pages/plantChat/plantChat",
+			"style": {
+				"navigationBarTitleText": "开心畅谈"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登陆/注册"
+			}
+		},
+		{
+			"path": "pages/userInfo/userInfo",
+			"style": {
+				"navigationBarTitleText": "个人信息"
+			}
+		},
+		{
+			"path": "pages/productInfo/productInfo",
+			"style": {
+				"navigationBarTitleText": "产品资料"
+			}
+		},
+		{
+			"path": "pages/updateUserInfo/updateUserInfo",
+			"style": {
+				"navigationBarTitleText": "修改信息"
+			}
+		},
+		{
+			"path": "pages/clip/clip",
+			"style": {
+				"navigationBarTitleText": "时光剪影"
+			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationBarTitleText": "指定植物"
+			}
+		},
+		{
+			"path": "pages/clip/clip",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/lab/lab",
+			"style": {
+				"navigationBarTitleText": "实验选择"
+			}
+		},
+		{
+			"path": "pages/labs/lab1/lab1",
+			"style": {
+				"navigationBarTitleText": "探究光照对植物生长的影响"
+			}
+		},
+		{
+			"path": "pages/labs/lab2/lab2",
+			"style": {
+				"navigationBarTitleText": "探究氧气浓度对植物生长的影响"
+			}
+		},
+		{
+			"path": "pages/labs/lab3/lab3",
+			"style": {
+				"navigationBarTitleText": "探究植物生长过程中土壤微量元素的变化"
+			}
+		},
+		{
+			"path": "pages/freelab/freelab",
+			"style": {
+				"navigationBarTitleText": "自由实验"
+			}
+		},
+		{
+			"path": "pages/knowledge/knowledge",
+			"style": {
+				"navigationBarTitleText": "知识问答"
+			}
+		},
+		{
+			"path": "pages/talk/talk",
+			"style": {
+				"navigationBarTitleText": "讨论区"
+			}
+		},
+		{
+			"path": "pages/farming/farming",
+			"style": {
+				"navigationBarTitleText": "开心农场"
+			}
+		},
+		{
+			"path": "pages/hello/hello",
+			"style": {
+				"navigationBarTitleText": "智趣农坊"
+			}
+		},
+		{
+			"path": "pages/chart_test/chart_test",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#DDE3E9",
+		"backgroundColor": "#fff"
+	},
+	"tabBar": {
+		"color": "black",
+		"selectedColor": "#10B078",
+		"borderStyle": "black",
+		"backgroundColor": "#F8F8F8",
+		"list": [{
+			"pagePath": "pages/index/index",
+			"iconPath": "static/首页.png",
+			"selectedIconPath": "static/首页-active.png",
+			"text": "首页"
+		}, {
+			"pagePath": "pages/virtual/virtual",
+			"iconPath": "static/交流.png",
+			"selectedIconPath": "static/交流-active.png",
+			"text": "绿宝"
+		}, {
+			"pagePath": "pages/edu-main/edu-main",
+			"iconPath": "/static/edu.png",
+			"selectedIconPath": "/static/edu-active.png",
+			"text": "教学"
+		}, {
+			"pagePath": "pages/my/my",
+			"iconPath": "static/用户.png",
+			"selectedIconPath": "static/用户-active.png",
+			"text": "我的"
+		}]
+	},
+	"uniIdRouter": {}
+}
