@@ -1,0 +1,41 @@
+
+.dataShow {
+	margin-top: 50rpx;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	flex-wrap: wrap;
+}
+.dataItem{
+	color: #10B078;
+	width: 350rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.dataImg{
+	width: 100rpx;
+	height: 100rpx;
+}
+.changeImg1 {
+	height: 100rpx;
+	width: 100rpx;
+	margin: 10rpx;
+}
+.changeImg2 {
+	height: 110rpx;
+	width: 110rpx;
+}
+.changeItem {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+.change {
+	display: flex;
+	color: #10B078;
+	height: 200rpx;
+	justify-content: space-around;
+}
+

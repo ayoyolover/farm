@@ -7,7 +7,7 @@
       </view>
       <view class="circle-button" @click="navRight">
 		  <img src="static/talk.png" alt="" class="itemImg">
-        <text>互动讨论</text>
+        <text>知识宝库</text>
       </view>
       <view class="circle-button" @click="goFreeLab">
 		   <img src="static/freelab.png" alt="" class="itemImg">
@@ -15,7 +15,7 @@
       </view>
 	  <view class="circle-button" @click="goKnowledge">
 	  		   <img src="static/knowledge.png" alt="" class="itemImg">
-	    <text>知识问答</text>
+	    <text>互动问答</text>
 	  </view>
     </view>
   </view>
@@ -31,7 +31,7 @@ export default {
     },
     navRight() {
       uni.navigateTo({
-        url: '/pages/talk/talk'
+        url: '/pages/store/store'
       });
     },
 	goKnowledge() {
