@@ -1,0 +1,524 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 蓝绿色渐变背景动画 */
+@-webkit-keyframes gradientBackground {
+0% {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+}
+25% {
+    background: linear-gradient(135deg, #80deea, #4dd0e1);
+}
+50% {
+    background: linear-gradient(135deg, #26c6da, #00bcd4);
+}
+75% {
+    background: linear-gradient(135deg, #80deea, #4dd0e1);
+}
+100% {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+}
+}
+@keyframes gradientBackground {
+0% {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+}
+25% {
+    background: linear-gradient(135deg, #80deea, #4dd0e1);
+}
+50% {
+    background: linear-gradient(135deg, #26c6da, #00bcd4);
+}
+75% {
+    background: linear-gradient(135deg, #80deea, #4dd0e1);
+}
+100% {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+}
+}
+.content {
+  -webkit-animation: gradientBackground 15s ease infinite;
+          animation: gradientBackground 15s ease infinite;
+  padding: 10rpx;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+.section {
+  margin-bottom: 40rpx;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(10rpx);
+          backdrop-filter: blur(10rpx);
+  padding: 20rpx;
+}
+.title-box {
+  background-color: #10B078;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+}
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+  line-height: 1.8;
+}
+.content-text {
+  font-size: 18px;
+  color: #555;
+  line-height: 1.8;
+  padding: 20px;
+}
+.experiment-area {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20rpx;
+  border-radius: 20rpx;
+}
+.input-group {
+  margin-bottom: 30rpx;
+}
+.label {
+  font-size: 28rpx;
+  color: #10B078;
+  margin-bottom: 10rpx;
+  line-height: 1.6;
+}
+.submit-button {
+  background-color: #10B078;
+  color: #fff;
+  font-size: 28rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  text-align: center;
+  margin: 20rpx 0;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, -webkit-transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, -webkit-transform 0.3s ease;
+  line-height: 1.5;
+}
+.submit-button:hover {
+  -webkit-transform: translateY(-5rpx);
+          transform: translateY(-5rpx);
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+.feedback {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+.feedback-score,
+.feedback-suggestion {
+  font-size: 28rpx;
+  color: #555;
+  margin-bottom: 10rpx;
+  line-height: 1.6;
+}
+.comment-item {
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+.comment-content {
+  font-size: 28rpx;
+  color: #555;
+  margin-bottom: 10rpx;
+  line-height: 1.6;
+}
+.comment-info {
+  font-size: 24rpx;
+  color: #888;
+  line-height: 1.6;
+}
+.no-comments {
+  text-align: center;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+}
+.comment-input {
+  margin-top: 20rpx;
+}
+.textarea {
+  width: 100%;
+  padding: 20rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+  font-size: 28rpx;
+  height: 200rpx;
+  line-height: 1.6;
+}
+.video-button {
+  background-color: #FFA500;
+  color: #fff;
+  font-size: 28rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  text-align: center;
+  margin: 20rpx 0;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, -webkit-transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, -webkit-transform 0.3s ease;
+  line-height: 1.5;
+}
+.video-button:hover {
+  -webkit-transform: translateY(-5rpx);
+          transform: translateY(-5rpx);
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+

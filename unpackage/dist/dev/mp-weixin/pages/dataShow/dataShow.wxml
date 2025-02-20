@@ -1,0 +1,1 @@
+<view><view class="dataShow"><block wx:for="{{data}}" wx:for-item="item" wx:for-index="__i0__"><view class="dataItem"><image class="dataImg _img" src="{{item.src}}"></image><view>{{item.str}}</view><view>{{item.data}}</view></view></block></view></view>

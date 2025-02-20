@@ -1,0 +1,241 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 容器样式 */
+.container {
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+}
+/* 视频背景样式 */
+.video {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	/* 将视频置于最底层 */
+	-webkit-filter: brightness(0.8);
+	        filter: brightness(0.8);
+	/* 降低视频亮度，实现透明度效果 */
+}
+/* 加载动画遮罩 */
+.loading-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #000;
+	/* 纯黑色背景 */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 999;
+	/* 置于最上层 */
+}
+/* 加载动画 */
+.loading-spinner {
+	width: 50px;
+	height: 50px;
+	border: 4px solid #fff;
+	border-top: 4px solid transparent;
+	border-radius: 50%;
+	-webkit-animation: spin 1s linear infinite;
+	        animation: spin 1s linear infinite;
+}
+@-webkit-keyframes spin {
+0% {
+		-webkit-transform: rotate(0deg);
+		        transform: rotate(0deg);
+}
+100% {
+		-webkit-transform: rotate(360deg);
+		        transform: rotate(360deg);
+}
+}
+@keyframes spin {
+0% {
+		-webkit-transform: rotate(0deg);
+		        transform: rotate(0deg);
+}
+100% {
+		-webkit-transform: rotate(360deg);
+		        transform: rotate(360deg);
+}
+}
+/* 问候弹窗样式 */
+.greeting-popup {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	        transform: translate(-50%, -50%);
+	background: linear-gradient(135deg, rgba(109, 213, 237, 0.85), rgba(33, 147, 176, 0.85));
+	padding: 30px 40px;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+	transition: opacity 0.5s ease;
+	width: 70%;
+	/* 弹窗宽度调整为70% */
+	max-width: 350px;
+	/* 最大宽度限制 */
+}
+.greeting-text {
+	display: block;
+	font-size: 20px;
+	color: #fff;
+	margin-bottom: 10px;
+	font-weight: bold;
+	font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
+	/* 使用更美观的字体 */
+}
+/* 选择弹窗样式 */
+.choice-popup {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	        transform: translate(-50%, -50%);
+	background: linear-gradient(135deg, rgba(109, 213, 237, 0.85), rgba(33, 147, 176, 0.85));
+	padding: 30px 40px;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+	transition: opacity 0.5s ease;
+	width: 70%;
+	/* 弹窗宽度调整为70% */
+	max-width: 350px;
+	/* 最大宽度限制 */
+}
+.choice-text {
+	display: block;
+	font-size: 20px;
+	color: #fff;
+	margin-bottom: 20px;
+	font-weight: bold;
+	font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
+	/* 使用更美观的字体 */
+}
+.choice-buttons {
+	display: flex;
+	justify-content: space-around;
+}
+.choice-button {
+	background: linear-gradient(135deg, #6dd5ed, #2193b0);
+	color: #fff;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 25px;
+	font-size: 16px;
+	font-weight: bold;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+	font-family: 'PingFang SC', 'Helvetica Neue', sans-serif;
+	/* 使用更美观的字体 */
+}
+.choice-button:active {
+	-webkit-transform: scale(0.95);
+	        transform: scale(0.95);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.choice-button:hover {
+	background: linear-gradient(135deg, #2193b0, #6dd5ed);
+}
+

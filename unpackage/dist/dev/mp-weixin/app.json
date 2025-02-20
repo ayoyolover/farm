@@ -1,0 +1,71 @@
+{
+  "pages": [
+    "pages/virtual/virtual",
+    "pages/index/index",
+    "pages/share/share",
+    "pages/my/my",
+    "pages/video/video",
+    "pages/dataShow/dataShow",
+    "pages/edu-main/edu-main",
+    "pages/plantChat/plantChat",
+    "pages/login/login",
+    "pages/userInfo/userInfo",
+    "pages/productInfo/productInfo",
+    "pages/updateUserInfo/updateUserInfo",
+    "pages/clip/clip",
+    "pages/chat/chat",
+    "pages/clip/clip",
+    "pages/lab/lab",
+    "pages/labs/lab1/lab1",
+    "pages/labs/lab2/lab2",
+    "pages/labs/lab3/lab3",
+    "pages/freelab/freelab",
+    "pages/knowledge/knowledge",
+    "pages/farming/farming",
+    "pages/hello/hello",
+    "pages/chart_test/chart_test",
+    "pages/store/store",
+    "pages/labs/lab5/lab5",
+    "pages/labs/lab4/lab4"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#DDE3E9",
+    "backgroundColor": "#fff"
+  },
+  "tabBar": {
+    "color": "black",
+    "selectedColor": "#10B078",
+    "borderStyle": "black",
+    "backgroundColor": "#F8F8F8",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/首页.png",
+        "selectedIconPath": "static/首页-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/virtual/virtual",
+        "iconPath": "static/交流.png",
+        "selectedIconPath": "static/交流-active.png",
+        "text": "绿宝"
+      },
+      {
+        "pagePath": "pages/edu-main/edu-main",
+        "iconPath": "/static/edu.png",
+        "selectedIconPath": "/static/edu-active.png",
+        "text": "教学"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "iconPath": "static/用户.png",
+        "selectedIconPath": "static/用户-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

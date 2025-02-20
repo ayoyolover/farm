@@ -30,6 +30,16 @@
 						id: 3,
 						name: '实验三：探究植物生长过程中土壤微量元素的变化',
 						image: '/static/lab3.jpg',
+					},
+					{
+						id: 4,
+						name: '实验四：观察植物的组成结构',
+						image: '/static/lab4.jpg',
+					},
+					{
+						id: 5,
+						name: '实验五：探究植物生长的向光性',
+						image: '/static/lab5.jpg',
 					}
 				]
 			};
