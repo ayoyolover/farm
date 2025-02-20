@@ -19,9 +19,9 @@
 				.then(res => {
 					console.log("自动问候成功", res)
 				})
-			uni.navigateTo({
-				url:'/pages/chart_test/chart_test'
-			})
+			// uni.navigateTo({
+			// 	url:'/pages/chart_test/chart_test'
+			// })
 		},
 
 		onShow() {

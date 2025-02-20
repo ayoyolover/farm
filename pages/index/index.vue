@@ -23,6 +23,10 @@
 				<img src="static/farm/farming.png" class="itemImg">
 				<view>开心农场</view>
 			</view>
+			<view class="item" @click="goClip">
+				<img src="static/farm/movie.png" class="itemImg">
+				<view>时光剪影</view>
+			</view>
 		</view>
 		<view class="brightness-control">
 			<view class="ITEM">种植进度：77%</view>
@@ -79,6 +83,11 @@
 			goVirtual() {
 				uni.navigateTo({
 					url: "/pages/virtual/virtual"
+				});
+			},
+			goClip() {
+				uni.navigateTo({
+					url: "/pages/clip/clip"
 				});
 			}
 		}
@@ -145,7 +154,7 @@
 	.function {
 		display: flex;
 		justify-content: space-around;
-		padding: 50rpx;
+		padding: 30rpx;
 		background-color: rgba(255, 255, 255, 0.8);
 		/* 半透明背景 */
 		border-radius: 20rpx;
@@ -160,7 +169,7 @@
 		flex-direction: column;
 		align-items: center;
 		border-radius: 15rpx;
-		padding: 20rpx 40rpx;
+		padding: 10rpx 25rpx;
 		color: #10B078;
 		font-size: 30rpx;
 		font-weight: bold;
