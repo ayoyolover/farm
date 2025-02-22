@@ -24,7 +24,22 @@
 					</view>
 				</view>
 			</view>
-    
+    <!--从后端获取视频-->
+	<view class="section">
+	  <view class="title-box">
+	    <text class="title">📺 教学视频</text>
+	  </view>
+	  <view class="container">
+	    <!-- 视频组件 -->
+	    <video
+	      :src="videoUrl"
+	      controls
+	      class="video-player"
+	      v-if="videoUrl"
+	    ></video>
+	    <text v-else class="loading-text">加载视频中...</text>
+	  </view>
+	</view>
     <!-- 跳转到视频直播板块 -->
     <view class="section">
       <button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
@@ -65,6 +80,7 @@
 </template>
 
 <script>
+import flask from '@/request/124flask.js';
 export default {
   data() {
     return {
@@ -124,6 +140,7 @@ export default {
     mounted() {
       this.fetchSoilData(); // 自动调用获取土壤数据
       this.fetchComments(); // 页面加载时获取评论列表
+	  this.getvideo(); // Call the function to get the video URL on component creation
     },
   methods: {
     // 获取当前日期
@@ -138,6 +155,42 @@ export default {
     // 日期选择器变化事件
     onDateChange(e) {
       this.queryDate = e.detail.value;
+    },
+
+async getvideo() {
+      const params = {
+        url: "/teach_video", // 完整的接口URL
+        method: "POST",
+        data: {
+          video_id: "1" // 传递视频ID，如果不需要可以去掉
+        },
+        header: {
+          "Content-Type": "application/json",
+        },
+      };
+    
+      try {
+        // 调用接口
+        const res = await flask(params);
+        console.log('后端返回的数据：', res);
+        
+        // 确保这里的字段名为 videoUrl
+        if (res && res.videoUrl) {
+          this.videoUrl = res.videoUrl; // 使用 videoUrl
+          console.log('视频URL:', this.videoUrl); // 确认视频 URL
+        } else {
+          uni.showToast({
+            title: "提交失败，请重试",
+            icon: "none",
+          });
+        }
+      } catch (error) {
+        console.error("接口调用失败：", error);
+        uni.showToast({
+          title: "网络错误，请重试",
+          icon: "none",
+        });
+      }
     },
 
     // 查询土壤微量元素数据
@@ -492,5 +545,21 @@ export default {
 .video-button:hover {
   transform: translateY(-5rpx);
   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+
+.title-box {
+  background-color: #10B078; /* 标题背景颜色 */
+  padding: 20rpx;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 视频播放器样式 */
+.video-player {
+  width: 100%; /* 宽度占满父容器 */
+  height: 400rpx; /* 设置一个合适的高度 */
+  border-radius: 20rpx; /* 圆角 */
+  overflow: hidden; /* 隐藏超出部分 */
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2); /* 阴影效果 */
 }
 </style>
