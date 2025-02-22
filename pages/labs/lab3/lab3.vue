@@ -10,52 +10,21 @@
       </text>
     </view>
 
-    <!-- 实验基本步骤 -->
-    <view class="section function">
-      <view class="title-box">
-        <text class="title">📝 实验基本步骤</text>
-      </view>
-      <text class="content">
-        1. 选择查询时间范围。<br>
-        2. 点击“查询”按钮，获取土壤中氮、磷、钾元素的含量数据。<br>
-        3. 根据数据调整施肥策略，观察植物生长情况。
-      </text>
-    </view>
-
-    <!-- 实验区 -->
-    <view class="section experiment-area">
-      <view class="title-box">
-        <text class="title">🔬 实验区</text>
-      </view>
-
-      <!-- 查询时间 -->
-      <view class="input-group">
-        <text class="label">📅 查询时间：</text>
-        <picker
-          mode="date"
-          :value="queryDate"
-          :start="startDate"
-          :end="endDate"
-          @change="onDateChange"
-        >
-          <view class="picker">{{ queryDate }}</view>
-        </picker>
-      </view>
-
-      <!-- 查询按钮 -->
-      <button @click="fetchSoilData" class="submit-button">🔍 查询</button>
-
-      <!-- 查询结果 -->
-      <view v-if="soilData" class="feedback">
-        <view class="title-box">
-          <text class="title">📊 土壤微量元素含量</text>
-        </view>
-        <text class="feedback-score">🌿 氮含量：{{ soilData.nitrogen }} mg/kg</text>
-        <text class="feedback-score">🌿 磷含量：{{ soilData.phosphorus }} mg/kg</text>
-        <text class="feedback-score">🌿 钾含量：{{ soilData.potassi }} mg/kg</text>
-      </view>
-    </view>
-
+			<!-- 查询结果 -->
+		<view>
+			<view v-if="soilData" class="feedback">
+					<view class="title-box">
+						<text class="title">📊 土壤微量元素含量</text>
+					</view>
+					<!-- 氮磷钾元素三色折线图 -->
+					<view class="chart-container">
+						<view class="charts-box">
+							<qiun-data-charts type="line" :opts="elementOPT" :chartData="elementData" :ontouch="true" />
+						</view>
+					</view>
+				</view>
+			</view>
+    
     <!-- 跳转到视频直播板块 -->
     <view class="section">
       <button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
@@ -105,11 +74,57 @@ export default {
       soilData: null, // 土壤微量元素数据
       comments: [], // 评论列表
       newCommentContent: "", // 新评论内容
+	  elementOPT: {
+	                  color: ['#FFE967', '#32CD32', '#1E90FF'], // 设置折线的颜色（氮、磷、钾）
+	                  padding: [15, 15, 15, 15], // 调整内边距使图表更美观
+	                  enableScroll: true, // 启用滚动
+	                  legend: {
+	                      position: 'top', // 图例放在顶部
+	                      fontSize: 11, // 设置字体大小
+	                      color: '#333' // 设置图例字体颜色
+	                  },
+	                  xAxis: {
+	                      type: 'category', // 横坐标类型为分类
+	                      data: [], // 横坐标数据，后续通过动态更新填充
+	                      disableGrid: false, // 启用网格
+	                      scrollShow: true, // 启用x轴滚动
+	                      itemCount: 5, // x轴最多显示5个数据点
+	                      fontSize: 12, // 设置x轴标签字体大小
+	                      lineColor: '#ccc', // x轴线条颜色
+	                      gridColor: '#f0f0f0' // 网格颜色
+	                  },
+	                  yAxis: { // 第一个 y 轴
+	                      gridType: 'solid', // 使用实线网格
+	                      dashLength: 4, // 调整虚线长度
+	                      fontSize: 12, // 设置y轴字体大小
+	                      lineColor: '#ccc', // y轴线条颜色
+	                      axisLabel: { // 设置y轴标签
+	                          color: '#333' // y 轴标签颜色
+	                      },
+	                      name: '含量 (mg/kg)', // y 轴名称
+	                  },
+	                  extra: {
+	                      line: {
+	                          type: 'curve', // 设置折线为曲线
+	                          width: 2, // 增加线宽
+	                          activeType: 'hollow', // 设置激活点为空心
+	                          smooth: true // 启用平滑曲线
+	                      }
+	                  }
+	              },
+	  elementData: {
+	                  categories: [], // 横坐标数据
+	                  series: [] // 数据系列
+	              }
     };
   },
   created() {
     this.fetchComments(); // 页面加载时获取评论列表
   },
+    mounted() {
+      this.fetchSoilData(); // 自动调用获取土壤数据
+      this.fetchComments(); // 页面加载时获取评论列表
+    },
   methods: {
     // 获取当前日期
     getCurrentDate() {
@@ -161,7 +176,73 @@ export default {
         });
       }
     },
-
+// 查询土壤微量元素数据
+			// 查询土壤微量元素数据
+			    async fetchSoilData() {
+			                // 获取当前时间并格式化为 yyyy-MM-dd HH:mm:ss
+			                const now = new Date();
+			                const year = now.getFullYear();
+			                const month = String(now.getMonth() + 1).padStart(2, '0');
+			                const day = String(now.getDate()).padStart(2, '0');
+			                const hours = String(now.getHours()).padStart(2, '0');
+			                const minutes = String(now.getMinutes()).padStart(2, '0');
+			                const seconds = String(now.getSeconds()).padStart(2, '0');
+			                const timestamp = `${year}:${month}:${day} ${hours}:${minutes}:${seconds}`;
+			                console.log(timestamp);
+			                const currentTime = {
+			                    currentTime: timestamp // 格式化为 yyyy-MM-dd HH:mm:ss
+			                };
+			    
+			                try {
+			                    const res = await uni.request({
+			                        url: "http://124.221.52.73:8080/system/soilElements",
+			                        method: "GET",
+			                        data: currentTime,
+			                        header: {
+			                            "Content-Type": "application/json"
+			                        }
+			                    });
+			    
+			                    if (res.data && res.data.data && res.data.data.length > 0) {
+			                        this.soilData = res.data.data;
+			                        this.renderChart();
+			                    }
+			                } catch (error) {
+			                    console.error('获取土壤数据失败:', error);
+			                }
+			            },
+			            renderChart() {
+			                const nitrogenData = [];
+			                const phosphorusData = [];
+			                const potassiumData = [];
+			                const times = [];
+			    
+			                this.soilData.forEach(item => {
+			                    nitrogenData.push(parseFloat(item.staValue['土壤氮']));
+			                    phosphorusData.push(parseFloat(item.staValue['土壤磷']));
+			                    potassiumData.push(parseFloat(item.staValue['土壤钾']));
+								times.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
+									.slice(8,
+										10)));
+			                });
+			    
+			                this.elementOPT.xAxis.data = times;
+			                this.elementData.categories = times;
+			                this.elementData.series = [
+			                    {
+			                        name: '氮含量',
+			                        data: nitrogenData
+			                    },
+			                    {
+			                        name: '磷含量',
+			                        data: phosphorusData
+			                    },
+			                    {
+			                        name: '钾含量',
+			                        data: potassiumData
+			                    }
+			                ];
+			            },
     // 跳转到视频直播板块
     navigateToVideo() {
       uni.navigateTo({
