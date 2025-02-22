@@ -1,468 +1,268 @@
 <template>
-	<view class="farm-container">
-		<!-- 农场背景 -->
-		<image src="/static/sow/back.png" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;"></image>
-
-		<!-- 可折叠工具栏 -->
-		<view class="collapsible-toolbar" v-bind:style="{ height: isToolbarOpen ? '180rpx' : '50rpx' }" ref="toolbar"
-			@mousedown="startDrag($event)">
-			<view class="toolbar-header" @click="toggleToolbar">
-				<image src="/static/icons/arrow-down.png" class="toggle-icon" v-if="!isToolbarOpen" />
-				<image src="/static/icons/arrow-up.png" class="toggle-icon" v-if="isToolbarOpen" />
-			</view>
-
-			<!-- 显示按钮的区域 -->
-			<view class="change" v-show="isToolbarOpen">
-				<view class="changeItem" @click="handleLED">
-					<image :src="isLed ? '/static/monitor/light-off.png' : '/static/monitor/light-on.png'"
-						class="icon" />
-					<view class="text">灯光</view>
-				</view>
-				<view class="changeItem" @click="handleOx">
-					<image :src="isOx ? '/static/monitor/Oxygen-off.png' : '/static/monitor/Oxygen-on.png'"
-						class="icon" />
-					<view class="text">供氧</view>
+	<view class="container">
+		<!-- 按日期分组展示照片 -->
+		<view v-for="(group, date) in groupedPhotos" :key="date" class="date-group">
+			<text class="date-label">{{ date }}</text> <!-- 直接使用 yyyy-mm-dd 格式 -->
+			<view class="grid">
+				<view v-for="(item, index) in group" :key="index" class="grid-item">
+					<image :src="item.url" class="grid-image" mode="aspectFill" @click="toggleSelect(item)"
+						:class="{ 'selected-opacity': item.selected }" />
+					<view v-if="item.selected" class="selected-icon">
+						<text class="iconfont icon-checkmark" style="color: white;">√</text>
+					</view>
 				</view>
 			</view>
 		</view>
-		<!-- 单个植物 -->
-		<view class="plant" @click="handlePlantClick"
-			style="position: absolute; top: 76%; left: 56%; transform: translate(-50%, -50%); text-align: center; cursor: pointer; transition: transform 0.3s ease; z-index: 2;">
-			<image :src="currentPlant.image" style="width: 150rpx; height: 150rpx;" />
+
+		<!-- 一键生成视频按钮 -->
+		<view class="button-container">
+			<button type="primary" size="mini" @click="handleMovie" :disabled="selectedCount < 3 || selectedCount > 5">
+				一键生成视频
+			</button>
+			<!-- 提示信息 -->
+			<text v-if="selectedCount < 3" class="hint-text">请至少选择三张照片</text>
+			<text v-if="selectedCount > 5" class="hint-text">最多只能选择五张照片</text>
 		</view>
 
-		<!-- 交互提示 -->
-		<view class="interaction-hint" v-if="showHint">
-			点击查看生长状态！
-		</view>
-
-		<!-- 弹出对话框 -->
-		<view class="popup-mask" v-if="showPopup" @click="closePopup">
-			<view class="popup-container" @click.stop>
-				<view class="popup-header">
-					<text class="popup-title">植物生长状态</text>
-				</view>
-				<view class="popup-content">
-					<view class="status-item">
-						<text class="status-label">生命值：</text>
-						<text class="status-value">{{ status.lifeValue }}</text>
-					</view>
-					<view class="status-item">
-						<text class="status-label">活力值：</text>
-						<text class="status-value">{{ status.vitality }}</text>
-					</view>
-					<view class="status-item">
-						<text class="status-label">心情：</text>
-						<text class="status-value">{{ status.mood }}</text>
-					</view>
-					<view class="status-item">
-						<text class="status-label">当前阶段：</text>
-						<text class="status-value">{{ status.growthStage }}</text>
-					</view>
-					<view class="status-item">
-						<text class="status-label">植物心声：</text>
-						<text class="status-value">{{ status.growthDesc }}</text>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="popup-close" @click="closePopup">关闭</button>
-				</view>
-			</view>
-		</view>
+		<!-- 视频播放区域 -->
+		<video v-if="movieLink" :src="movieLink" controls class="video"></video>
 	</view>
 </template>
-<script>
-	import {
-		getStatus
-	} from '@/request/farming.js';
 
+<script>
 	export default {
 		data() {
 			return {
-				plants: [{
-						name: "番茄",
-						image: "/static/sow/sprout.png",
-						status: "出苗",
-						scale: "scale(1)",
-						daysToNext: 3,
+				array: [{
+						url: "/static/farm/chart.png",
+						date: "2025-02-15T10:00:00",
+						selected: false
 					},
 					{
-						name: "番茄",
-						image: "/static/sow/flower.png",
-						status: "开花",
-						scale: "scale(1)",
-						daysToNext: 5,
+						url: "/static/farm/farming.png",
+						date: "2025-02-15T12:30:00",
+						selected: false
 					},
 					{
-						name: "番茄",
-						image: "/static/sow/little-tomato.png",
-						status: "成熟",
-						scale: "scale(1)",
-						daysToNext: 7,
+						url: "/static/farm/film-on.png",
+						date: "2025-02-16T08:00:00",
+						selected: false
 					},
 					{
-						name: "番茄",
-						image: "/static/sow/large-tomato.png",
-						status: "结果",
-						scale: "scale(1)",
-						daysToNext: 0,
+						url: "/static/farm/film-off.png",
+						date: "2025-02-16T09:00:00",
+						selected: false
+					},
+					{
+						url: "/static/farm/movie.png",
+						date: "2025-02-17T14:00:00",
+						selected: false
+					},
+					{
+						url: "/static/farm/Picon.png",
+						date: "2025-02-17T14:00:00",
+						selected: false
 					},
 				],
-				currentPlantIndex: 0,
-				showHint: true,
-				daysToNextStage: 0,
-				nextStageName: "",
-				showPopup: false,
-				status: {},
-				isLed: false,
-				isOx: false,
-				isToolbarOpen: false,
-				oxygenTimes: 0,
-				lightTimes: 0,
-				dragging: false,
-				dragStartX: 0,
-				dragStartY: 0,
-				toolbarPosition: {
-					top: 0,
-					left: 0,
-				},
+				movieLink: "", // 视频链接
 			};
 		},
 		computed: {
-			currentPlant() {
-				return this.plants[this.currentPlantIndex];
+			// 按日期分组的照片
+			groupedPhotos() {
+				const groups = {};
+				this.array.forEach(item => {
+					// 提取 yyyy-mm-dd 格式的日期
+					const date = new Date(item.date).toISOString().split("T")[0];
+					if (!groups[date]) {
+						groups[date] = [];
+					}
+					groups[date].push(item);
+				});
+				return groups;
+			},
+			selectedCount() {
+				// 计算已选择的照片数量
+				return this.array.filter(item => item.selected).length;
 			},
 		},
 		methods: {
-			handlePlantClick() {
-				this.calculateNextStage();
-				this.showPopup = true;
-				this.showHint = false;
-			},
-			calculateNextStage() {
-				const currentPlant = this.currentPlant;
-				const nextIndex = (this.currentPlantIndex + 1) % this.plants.length;
-				const nextPlant = this.plants[nextIndex];
-
-				this.daysToNextStage = currentPlant.daysToNext;
-				this.nextStageName = nextPlant.status;
-			},
-			closePopup() {
-				this.showPopup = false;
-			},
-			onLoad() {
-				var app = getApp();
-				console.log(app.globalData);
-				getStatus(app.globalData.userId, app.globalData.plantId)
-					.then((res) => {
-						console.log("res", res);
-						this.status = res.data;
+			toggleSelect(item) {
+				// 切换照片选中状态
+				if (this.selectedCount >= 5 && !item.selected) {
+					uni.showToast({
+						title: "最多只能选择5张照片",
+						icon: "none",
 					});
-			},
-			toggleToolbar() {
-				this.isToolbarOpen = !this.isToolbarOpen;
-			},
-			handleLED() {
-				let action = !this.isLed ? 'start' : 'end';
-				this.isLed = !this.isLed;
-				this.lightTimes += 1;
-				uni.request({
-					url: `http://192.168.1.109:5000/handleLED?action=${action}`,
-					method: 'GET',
-					success: (res) => {
-						console.log(res);
-					},
-					fail: (err) => {
-						console.error('请求失败:', err);
-						uni.showToast({
-							title: '请求失败，请检查网络或链接',
-							icon: 'none',
-						});
-					},
-				});
-			},
-			handleOx() {
-				let action = !this.isOx ? 'start' : 'end';
-				this.isOx = !this.isOx;
-				this.oxygenTimes += 1;
-				uni.request({
-					url: `http://192.168.1.109:5000/handleOX?action=${action}`,
-					method: 'GET',
-					success: (res) => {
-						console.log(res);
-					},
-					fail: (err) => {
-						console.error('请求失败:', err);
-						uni.showToast({
-							title: '请求失败，请检查网络或链接',
-							icon: 'none',
-						});
-					},
-				});
-			},
-			startDrag(event) {
-				this.dragging = true;
-				this.dragStartX = event.clientX;
-				this.dragStartY = event.clientY;
-				this.toolbarPosition = {
-					top: this.$refs.toolbar.offsetTop,
-					left: this.$refs.toolbar.offsetLeft,
-				};
-				window.addEventListener('mousemove', this.onDrag);
-				window.addEventListener('mouseup', this.stopDrag);
-			},
-			onDrag(event) {
-				if (this.dragging) {
-					const deltaX = event.clientX - this.dragStartX;
-					const deltaY = event.clientY - this.dragStartY;
-
-					this.toolbarPosition.left = this.toolbarPosition.left + deltaX;
-					this.toolbarPosition.top = this.toolbarPosition.top + deltaY;
-
-					// 更新拖动的起始位置为当前鼠标位置
-					this.dragStartX = event.clientX;
-					this.dragStartY = event.clientY;
-
-					// 通过修改样式来调整位置
-					this.$refs.toolbar.style.left = `${this.toolbarPosition.left}px`;
-					this.$refs.toolbar.style.top = `${this.toolbarPosition.top}px`;
+					return;
 				}
+				item.selected = !item.selected;
 			},
-			stopDrag() {
-				this.dragging = false;
-				window.removeEventListener('mousemove', this.onDrag);
-				window.removeEventListener('mouseup', this.stopDrag);
+			handleMovie() {
+				// 生成视频
+				if (this.selectedCount < 3) {
+					uni.showToast({
+						title: "至少需要选择3张照片",
+						icon: "none",
+					});
+					return;
+				}
+				uni.showLoading({
+					title: "视频生成中",
+				});
+				// 提取选中的照片URL
+				const selectedUrls = this.array
+					.filter(item => item.selected)
+					.map(item => item.url)
+					.join(",");
+
+				uni.request({
+					url: "http://124.221.52.73:80/get_video_url",
+					method: "GET",
+					data: {
+						photos: selectedUrls,
+					},
+					success: (res) => {
+						uni.hideLoading();
+						this.movieLink = res.data;
+						console.log(this.movieLink);
+					},
+					fail: () => {
+						uni.hideLoading();
+						uni.showToast({
+							title: "视频生成失败",
+							icon: "none",
+						});
+					},
+				});
 			},
 		},
 	};
 </script>
+
 <style>
-	/* 页面容器 */
-	.farm-container {
-		position: relative;
-		width: 100%;
-		height: 100vh;
-		overflow: hidden;
-	}
-
-	/* 可折叠工具栏样式 */
-	.collapsible-toolbar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		background: rgba(255, 255, 255, 0.5);
-		/* 白色背景，带透明度 */
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-		/* 添加较强的阴影 */
-		z-index: 1000;
-		transition: height 0.3s ease;
-		backdrop-filter: blur(10px);
-		/* 添加背景模糊效果 */
-		cursor: move;
-		/* 改为拖拽指针 */
-	}
-
-	.toolbar-header {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 20rpx;
-		/* 顶部区域的高度 */
-		cursor: pointer;
-		transition: background-color 0.3s ease;
-		/* 背景颜色过渡 */
-	}
-
-	.toolbar-header:hover {
-		background-color: rgba(255, 255, 255, 0.3);
-		/* 鼠标悬浮时略微改变背景透明度 */
-	}
-
-	.toggle-icon {
-		width: 40rpx;
-		height: 40rpx;
-		transition: transform 0.3s ease;
-	}
-
-	.change {
-		display: flex;
-		justify-content: space-around;
-		padding: 10rpx;
-		flex-wrap: wrap;
-	}
-
-	.changeItem {
-		text-align: center;
-		cursor: pointer;
-	}
-
-	.icon {
-		width: 80rpx;
-		height: 80rpx;
-		transition: transform 0.3s ease;
-	}
-
-	.text {
-		font-size: 28rpx;
-		color: #333;
-		margin-top: 5rpx;
-		transition: color 0.3s ease;
-	}
-
-	.changeItem:hover .text {
-		color: #56ab2f;
-		/* 鼠标悬浮时文字颜色变化 */
-	}
-
-	.changeItem:hover .icon {
-		transform: scale(1.1);
-		/* 鼠标悬浮时图标放大 */
-	}
-
-
-	/* 农场背景 */
-	.farm-background {
-		width: 100%;
-		height: 100%;
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 1;
-	}
-
-	/* 植物 */
-	.plant {
-		position: absolute;
-		top: 75%;
-		left: 55%;
-		transform: translate(-50%, -50%);
-		text-align: center;
-		cursor: pointer;
-		transition: transform 0.3s ease;
-		z-index: 2;
-	}
-
-	.plant-image {
-		width: 150rpx;
-		height: 150rpx;
-		transition: transform 0.3s ease;
-	}
-
-	/* 交互提示 */
-	.interaction-hint {
-		position: absolute;
-		bottom: 7%;
-		left: 50%;
-		transform: translateX(-50%);
-		background: rgba(0, 0, 0, 0.8);
-		color: #fff;
-		padding: 20rpx 40rpx;
-		border-radius: 50rpx;
-		font-size: 28rpx;
-		z-index: 3;
-		animation: hintFade 2s infinite;
-	}
-
-	/* 提示动画 */
-	@keyframes hintFade {
+	/* 动态渐变背景 */
+	@keyframes gradient {
 		0% {
-			opacity: 1;
+			background-position: 0% 50%;
 		}
 
 		50% {
-			opacity: 0.5;
+			background-position: 100% 50%;
 		}
 
 		100% {
-			opacity: 1;
+			background-position: 0% 50%;
 		}
 	}
 
-	/* 弹出框遮罩 */
-	.popup-mask {
-		position: fixed;
-		top: 0;
-		left: 0;
+	.container {
+		padding: 10px;
+		background: linear-gradient(270deg, #33ffff, #3333f3, #3bf333);
+		background-size: 600% 600%;
+		animation: gradient 15s ease infinite;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.date-group {
+		margin-bottom: 10px;
+		margin-left: 10px;
+		margin-right: 10px;
+		width: 95%;
+		background: rgba(255, 255, 255, 0.9);
+		/* 添加白色背景 */
+		padding: 10px;
+		border-radius: 12px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+		/* 添加悬浮效果 */
+	}
+
+	.date-label {
+		font-size: 18px;
+		font-weight: bold;
+		margin-bottom: 10px;
+		color: #333;
+		text-align: center;
+		font-family: "Arial", sans-serif;
+		/* 添加好看的字体 */
+	}
+
+	.grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: start;
 		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
+	}
+
+	.grid-item {
+		width: 30%;
+		position: relative;
+		margin: 10px;
+		border: 2px solid rgba(255, 255, 255, 0.8);
+		/* 添加边框 */
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+		/* 添加悬浮效果 */
+		background: rgba(255, 255, 255, 0.9);
+		/* 添加白色背景 */
+	}
+
+	.grid-image {
+		width: 100%;
+		height: 100px;
+		border-radius: 8px;
+		transition: opacity 0.3s ease;
+	}
+
+	.grid-image.selected-opacity {
+		opacity: 0.5;
+	}
+
+	.selected-icon {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background-color: rgba(0, 123, 255, 0.7);
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		z-index: 999;
 	}
 
-	/* 弹出框容器 */
-	.popup-container {
-		background: linear-gradient(135deg, #a8e063, #56ab2f);
-		border-radius: 20rpx;
-		padding: 40rpx;
-		box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
-		text-align: center;
-		width: 80%;
-		max-width: 500rpx;
-	}
-
-	.popup-header {
-		margin-bottom: 30rpx;
-	}
-
-	.popup-title {
-		font-size: 36rpx;
-		color: #fff;
-		font-weight: bold;
-	}
-
-	.popup-content {
+	.button-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		margin-bottom: 30rpx;
-	}
-
-	.status-item {
-		display: flex;
-		justify-content: space-between;
 		width: 100%;
-		margin-bottom: 15rpx;
 	}
 
-	.status-label {
-		font-size: 32rpx;
-		color: #fff;
+	.button-container button {
+		margin-bottom: 10px;
+		background: linear-gradient(135deg, #ff69b4 0%, #ffcc00 100%);
+		color: white;
+		font-weight: bold;
+		border-radius: 20px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 	}
 
-	.status-value {
-		font-size: 32rpx;
-		color: #fff;
-		display: inline-block;
-		width: 6em;
-		/* 根据需要设置合适的宽度，可以根据字体和需求调整 */
-		white-space: nowrap;
-		/* 不换行 */
-		overflow: hidden;
-		/* 隐藏超出部分 */
-		text-overflow: ellipsis;
-		/* 超出部分显示省略号 */
+	.hint-text {
+		color: red;
+		font-size: 14px;
+		text-align: center;
+		width: 100%;
 	}
 
-	.popup-footer {
-		margin-top: 30rpx;
-	}
-
-	.popup-close {
-		background: #fff;
-		color: #56ab2f;
-		border: none;
-		border-radius: 50rpx;
-		padding: 10rpx 40rpx;
-		font-size: 28rpx;
-		cursor: pointer;
-		transition: background 0.3s ease;
-	}
-
-	.popup-close:hover {
-		background: #f0f0f0;
+	.video {
+		width: 100%;
+		margin-top: 20px;
+		border-radius: 12px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	}
 </style>

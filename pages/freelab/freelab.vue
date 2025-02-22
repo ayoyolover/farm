@@ -30,8 +30,8 @@
 
 			<!-- 氧气浓度 -->
 			<view class="input-group">
-				<text class="label">🌬️ 氧气浓度（%）：</text>
-				<slider v-model="oxygenConcentration" min="0" max="100" step="1" show-value activeColor="#10B078" />
+				<text class="label">🌬️ 通氧时长（小时）：</text>
+				<slider v-model="oxygenConcentration" min="0" max="24" step="1" show-value activeColor="#10B078" />
 			</view>
 
 			<!-- 通氧间隔 -->
@@ -40,20 +40,12 @@
 				<slider v-model="oxygenInterval" min="0" max="120" step="10" show-value activeColor="#10B078" />
 			</view>
 
-			<!-- 查询时间 -->
-			<view class="input-group">
-				<text class="label">📅 查询时间：</text>
-				<picker mode="date" :value="queryDate" :start="startDate" :end="endDate" @change="onDateChange">
-					<view class="picker">{{ queryDate }}</view>
-				</picker>
-			</view>
+
+
 
 			<!-- 提交按钮 -->
 			<button @click="submitParameters" class="submit-button">🚀 提交</button>
-
-			<!-- 查询土壤数据按钮 -->
-			<button @click="fetchSoilData" class="submit-button">🔍 查询土壤数据</button>
-
+			
 			<!-- 反馈结果 -->
 			<view v-if="feedback" class="feedback">
 				<view class="title-box">
@@ -66,18 +58,67 @@
 				<view class="feedback-score">⏳ 通氧间隔评分：{{ feedback.scores.oxygenInterval }}</view>
 				<view class="feedback-suggestion">💡 建议：{{ feedback.feedback }}</view>
 			</view>
+			
+			<!-- 查询时间 -->
+			<view class="input-group">
+				<text class="label">📅 查询时间：</text>
+				<picker mode="date" :value="queryDate" :start="startDate" :end="endDate" @change="onDateChange">
+					<view class="picker">{{ queryDate }}</view>
+				</picker>
+			</view>
+			
+			<!-- 查询土壤数据按钮 -->
+			<button @click="fetchSoilData" class="submit-button">🔍 查询土壤数据</button>
+
+
 
 			<!-- 查询结果 -->
-			<view v-if="soilData" class="feedback">
-				<view class="title-box">
-					<text class="title">📊 土壤微量元素含量</text>
+				<view>
+				<view v-if="soilData" class="feedback">
+					<view class="title-box">
+						<text class="title">📊 土壤微量元素含量</text>
+					</view>
+					<!-- 氮磷钾元素三色折线图 -->
+					<view class="chart-container">
+						<view class="charts-box">
+							<qiun-data-charts type="line" :opts="elementOPT" :chartData="elementData" :ontouch="true" />
+						</view>
+					</view>
 				</view>
-				<text class="feedback-score">🌿 氮含量：{{ soilData.nitrogen }} mg/kg</text>
-				<text class="feedback-score">🌿 磷含量：{{ soilData.phosphorus }} mg/kg</text>
-				<text class="feedback-score">🌿 钾含量：{{ soilData.potassi }} mg/kg</text>
 			</view>
-		</view>
+	
+		
+		 <view class="section photo-box">
+		      <view class="title-box">
+		        <text class="title">📷 植物生长记录</text>
+		      </view>
+		
+		      <!-- 开启定期拍照按钮 -->
+		      <button @click="capturePhoto" class="submit-button">📸 开启定期拍照</button>
+		
+		      <!-- 图片展示区 -->
+		      <view v-if="capturedPhotoUrl" class="photo-display">
+		        <image :src="capturedPhotoUrl" mode="aspectFit" class="photo" />
+		      </view>
+		
+		      <!-- 开启植培点滴按钮 -->
+		      <button @click="generatePhotos" class="submit-button">🌱 开启植培点滴</button>
+		
+		      <!-- 植培点滴图片展示区 -->
+		      <view v-if="generatedPhotoUrls.length > 0" class="photo-display">
+		        <view class="photo-grid">
+		          <image
+		            v-for="(url, index) in generatedPhotoUrls"
+		            :key="index"
+		            :src="url"
+		            mode="aspectFit"
+		            class="photo"
 
+		          />
+		        </view>
+		      </view>
+		    </view>
+		
 		<!-- 跳转到视频直播板块 -->
 		<view class="section">
 			<button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
@@ -107,6 +148,7 @@
 			</view>
 		</view>
 	</view>
+		</view>
 </template>
 
 <script>
@@ -123,13 +165,62 @@
 				endDate: this.getCurrentDate(), // 查询时间范围结束日期
 				feedback: null, // 系统反馈
 				soilData: null, // 土壤微量元素数据
+				chart: null,
 				comments: [], // 评论列表
 				newCommentContent: "", // 新评论内容
+				capturedPhotoUrl: "", // 定期拍照的图片 URL
+				generatedPhotoUrls: [], // 植培点滴的图片 URL 列表
+				selectedPhotoIndex: null, // 当前选中的图片索引
+				 elementOPT: {
+				                color: ['#FFE967', '#32CD32', '#1E90FF'], // 设置折线的颜色（氮、磷、钾）
+				                padding: [15, 15, 15, 15], // 调整内边距使图表更美观
+				                enableScroll: true, // 启用滚动
+				                legend: {
+				                    position: 'top', // 图例放在顶部
+				                    fontSize: 11, // 设置字体大小
+				                    color: '#333' // 设置图例字体颜色
+				                },
+				                xAxis: {
+				                    type: 'category', // 横坐标类型为分类
+				                    data: [], // 横坐标数据，后续通过动态更新填充
+				                    disableGrid: false, // 启用网格
+				                    scrollShow: true, // 启用x轴滚动
+				                    itemCount: 5, // x轴最多显示5个数据点
+				                    fontSize: 12, // 设置x轴标签字体大小
+				                    lineColor: '#ccc', // x轴线条颜色
+				                    gridColor: '#f0f0f0' // 网格颜色
+				                },
+				                yAxis: { // 第一个 y 轴
+				                    gridType: 'solid', // 使用实线网格
+				                    dashLength: 4, // 调整虚线长度
+				                    fontSize: 12, // 设置y轴字体大小
+				                    lineColor: '#ccc', // y轴线条颜色
+				                    axisLabel: { // 设置y轴标签
+				                        color: '#333' // y 轴标签颜色
+				                    },
+				                    name: '含量 (mg/kg)', // y 轴名称
+				                },
+				                extra: {
+				                    line: {
+				                        type: 'curve', // 设置折线为曲线
+				                        width: 2, // 增加线宽
+				                        activeType: 'hollow', // 设置激活点为空心
+				                        smooth: true // 启用平滑曲线
+				                    }
+				                }
+				            },
+				elementData: {
+				                categories: [], // 横坐标数据
+				                series: [] // 数据系列
+				            }
 			};
 		},
 		created() {
 			this.fetchComments(); // 页面加载时获取评论列表
 		},
+		onReady() {
+		    this.fetchSoilData();
+		  },
 		methods: {
 			// 获取当前日期
 			getCurrentDate() {
@@ -192,45 +283,143 @@
 					});
 				}
 			},
-
+			
+			async capturePhoto() {
+			  const user_id = 666666; // 用户 ID
+			  try {
+			    const res = await uni.request({
+			      url: `http://192.168.1.109:5000/capture/user?user_id=${user_id}`,
+			      method: "GET",
+			    });
+			
+			    // 打印请求返回的结果
+			    console.log('请求返回的结果:', res);
+			
+			    if (res.data && res.data.image_url) {
+			      this.capturedPhotoUrl = res.data.image_url; // 更新图片 URL
+			      uni.showToast({
+			        title: "拍照成功",
+			        icon: "success",
+			      });
+			    } else {
+			      uni.showToast({
+			        title: "拍照失败，请重试",
+			        icon: "none",
+			      });
+			    }
+			  } catch (error) {
+			    console.error("拍照失败：", error);
+			    uni.showToast({
+			      title: "网络错误，请重试",
+			      icon: "none",
+			    });
+			  }
+			},
+			
+			    // 开启植培点滴
+			    async generatePhotos() {
+			      const user_id = 666666; // 用户 ID
+			      try {
+			        const res = await uni.request({
+			          url: `http://192.168.1.109:5000/generatePhotos?user_id=${user_id}`,
+			          method: "GET",
+			        });
+					console.log(res);
+			        if (res.data && res.data.photos && res.data.photos.length > 0) {
+			          // 只保留奇数张图片
+			          this.generatedPhotoUrls = res.data.photos.filter((url, index) => index % 2 === 0);
+			          uni.showToast({
+			            title: "获取图片成功",
+			            icon: "success",
+			          });
+			        } else {
+			          uni.showToast({
+			            title: "获取图片失败，请重试",
+			            icon: "none",
+			          });
+			        }
+			      } catch (error) {
+			        console.error("获取图片失败：", error);
+			        uni.showToast({
+			          title: "网络错误，请重试",
+			          icon: "none",
+			        });
+			      }
+			    },
+			
+			    // 选择图片
+			    selectPhoto(index) {
+			      this.selectedPhotoIndex = index;
+			    },
 
 			// 查询土壤微量元素数据
-			async fetchSoilData() {
-				const params = {
-					timestamp: `${this.queryDate} 00:00:00`, // 格式化为 yyyy-MM-dd HH:mm:ss
-				};
-
-				try {
-					const res = await uni.request({
-						url: "/system/soilElements",
-						method: "GET",
-						data: params,
-						header: {
-							"Content-Type": "application/json",
-						},
-					});
-
-					if (res.data.code === 1) {
-						this.soilData = res.data.data;
-						uni.showToast({
-							title: "查询成功",
-							icon: "success",
-						});
-					} else {
-						uni.showToast({
-							title: "查询失败，请重试",
-							icon: "none",
-						});
-					}
-				} catch (error) {
-					console.error("查询失败：", error);
-					uni.showToast({
-						title: "网络错误，请重试",
-						icon: "none",
-					});
-				}
-			},
-
+			// 查询土壤微量元素数据
+			    async fetchSoilData() {
+			                // 获取当前时间并格式化为 yyyy-MM-dd HH:mm:ss
+			                const now = new Date();
+			                const year = now.getFullYear();
+			                const month = String(now.getMonth() + 1).padStart(2, '0');
+			                const day = String(now.getDate()).padStart(2, '0');
+			                const hours = String(now.getHours()).padStart(2, '0');
+			                const minutes = String(now.getMinutes()).padStart(2, '0');
+			                const seconds = String(now.getSeconds()).padStart(2, '0');
+			                const timestamp = `${year}:${month}:${day} ${hours}:${minutes}:${seconds}`;
+			                console.log(timestamp);
+			                const currentTime = {
+			                    currentTime: timestamp // 格式化为 yyyy-MM-dd HH:mm:ss
+			                };
+			    
+			                try {
+			                    const res = await uni.request({
+			                        url: "http://124.221.52.73:8080/system/soilElements",
+			                        method: "GET",
+			                        data: currentTime,
+			                        header: {
+			                            "Content-Type": "application/json"
+			                        }
+			                    });
+			    
+			                    if (res.data && res.data.data && res.data.data.length > 0) {
+			                        this.soilData = res.data.data;
+			                        this.renderChart();
+			                    }
+			                } catch (error) {
+			                    console.error('获取土壤数据失败:', error);
+			                }
+			            },
+			            renderChart() {
+			                const nitrogenData = [];
+			                const phosphorusData = [];
+			                const potassiumData = [];
+			                const times = [];
+			    
+			                this.soilData.forEach(item => {
+			                    nitrogenData.push(parseFloat(item.staValue['土壤氮']));
+			                    phosphorusData.push(parseFloat(item.staValue['土壤磷']));
+			                    potassiumData.push(parseFloat(item.staValue['土壤钾']));
+								times.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
+									.slice(8,
+										10)));
+			                });
+			    
+			                this.elementOPT.xAxis.data = times;
+			                this.elementData.categories = times;
+			                this.elementData.series = [
+			                    {
+			                        name: '氮含量',
+			                        data: nitrogenData
+			                    },
+			                    {
+			                        name: '磷含量',
+			                        data: phosphorusData
+			                    },
+			                    {
+			                        name: '钾含量',
+			                        data: potassiumData
+			                    }
+			                ];
+			            },
+						
 			// 跳转到视频直播板块
 			navigateToVideo() {
 				uni.navigateTo({
@@ -313,6 +502,9 @@
 				}
 			},
 		},
+		   mounted() {
+		          this.fetchSoilData();
+		      }
 	};
 </script>
 
@@ -468,7 +660,50 @@
 		height: 200rpx;
 		line-height: 1.6;
 	}
-
+	.chart-container {
+	    width: 100%;
+	    height: 400px;
+	}
+	
+	.charts-box {
+	    width: 100%;
+	    height: 100%;
+	}
+	
+	.photo-box {
+	    margin-bottom: 40rpx;
+	    background-color: rgba(255, 255, 255, 0.8);
+	    border-radius: 20rpx;
+	    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+	    padding: 20rpx;
+	  }
+	
+	  .photo-display {
+	    margin-top: 20rpx;
+	  }
+	
+	  .photo {
+	    width: 100%;
+	    height: 300rpx;
+	    border-radius: 10rpx;
+	    margin-bottom: 10rpx;
+	  }
+	
+	  .photo-grid {
+	    display: flex;
+	    flex-wrap: wrap;
+	    gap: 10rpx;
+	  }
+	
+	  .photo-grid .photo {
+	    width: calc(50% - 5rpx);
+	    height: 200rpx;
+	  }
+	
+	  .photo-grid .photo.selected {
+	    border: 4rpx solid #10B078;
+	  }
+	  
 	.video-button {
 		background-color: #FFA500;
 		color: #fff;

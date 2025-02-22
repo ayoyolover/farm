@@ -19,7 +19,7 @@
         <text class="title">📝 实验基本步骤</text>
       </view>
       <text class="content">
-        首先设置氧气浓度和通氧间隔，然后点击“提交”按钮，获取系统的反馈，接下来根据反馈调整参数，观察植物生长情况。
+        首先设置通氧时长和通氧间隔，然后点击“提交”按钮，获取系统的反馈，接下来根据反馈调整参数，观察植物生长情况。
       </text>
     </view>
 
@@ -29,13 +29,13 @@
         <text class="title">🔬 实验区</text>
       </view>
 
-      <!-- 氧气浓度 -->
+      <!-- 通氧时长 -->
       <view class="input-group">
-        <text class="label">🌬️ 氧气浓度（%）：</text>
+        <text class="label">🌬️ 通氧时长（小时）：</text>
         <slider
-          v-model="oxygenConcentration"
+          v-model="oxygenDuration"
           min="0"
-          max="100"
+          max="24"
           step="1"
           show-value
           activeColor="#10B078"
@@ -63,11 +63,29 @@
         <view class="title-box">
           <text class="title">📊 系统反馈</text>
         </view>
-        <text class="feedback-score">⭐ 打分：{{ feedback.score }}</text>
-        <text class="feedback-suggestion">💡 建议：{{ feedback.suggestions }}</text>
+        <view class="feedback-score">⭐ 总评分：{{ feedback.total_score }}</view>
+        <view class="feedback-score">🌬️ 通氧时长评分：{{ feedback.scores.oxygenDuration }}</view>
+        <view class="feedback-score">⏳ 通氧间隔评分：{{ feedback.scores.oxygenInterval }}</view>
+        <text class="feedback-suggestion">💡 建议：{{ feedback.feedback }}</text>
       </view>
     </view>
 
+	<view class="section">
+	  <view class="title-box">
+	    <text class="title">📺 教学视频</text>
+	  </view>
+	  <view class="container">
+	    <!-- 视频组件 -->
+	    <video
+	      :src="videoUrl"
+	      controls
+	      class="video-player"
+	      v-if="videoUrl"
+	    ></video>
+	    <text v-else class="loading-text">加载视频中...</text>
+	  </view>
+	</view>
+	
     <!-- 跳转到视频直播板块 -->
     <view class="section">
       <button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
@@ -108,62 +126,104 @@
 </template>
 
 <script>
+	
+	import flask from '@/request/124flask.js';
+	import request from '@/request/respberry.js';
+	
 export default {
   data() {
     return {
-      oxygenConcentration: 21, // 氧气浓度，默认21%
+      oxygenDuration: 21, // 氧气浓度，默认21%
       oxygenInterval: 60, // 通氧间隔，默认60分钟
       feedback: null, // 系统反馈
       comments: [], // 评论列表
       newCommentContent: "", // 新评论内容
+	  videoUrl: "", // 视频 URL
     };
   },
   created() {
     this.fetchComments(); // 页面加载时获取评论列表
+	this.getvideo(); 
   },
   methods: {
+	  
+	  async getvideo() {
+	    const params = {
+	      url: "/teach_video", // 完整的接口URL
+	      method: "POST",
+	      data: {
+	        video_id: "3" // 传递视频ID，如果不需要可以去掉
+	      },
+	      header: {
+	        "Content-Type": "application/json",
+	      },
+	    };
+	  
+	    try {
+	      // 调用接口
+	      const res = await flask(params);
+	      console.log('后端返回的数据：', res);
+	      
+	      // 确保这里的字段名为 videoUrl
+	      if (res && res.videoUrl) {
+	        this.videoUrl = res.videoUrl; // 使用 videoUrl
+	      } else {
+	        uni.showToast({
+	          title: "提交失败，请重试",
+	          icon: "none",
+	        });
+	      }
+	    } catch (error) {
+	      console.error("接口调用失败：", error);
+	      uni.showToast({
+	        title: "网络错误，请重试",
+	        icon: "none",
+	      });
+	    }
+	  },
+	  
     // 提交参数
     async submitParameters() {
       const params = {
-        userid: 1, // 用户ID（可根据实际需求修改）
-        plantid: 1, // 植物ID（可根据实际需求修改）
-        parameters: {
-          lightDuration: 0, // 光照时长（本实验未涉及）
-          lightInterval: 0, // 光照间隔（本实验未涉及）
-          oxygenDuration: this.oxygenConcentration, // 氧气浓度
-          oxygenInterval: this.oxygenInterval, // 通氧间隔
-        },
-      };
-
+        		  url: "/plantGrowth/adjust0xygenParameters", 
+        		  	method: "POST",
+        		  	data: {
+        		  		userid: 1, // 用户ID（可根据实际需求修改）
+        		  		plantid: 1, // 植物ID（可根据实际需求修改）
+        		  		parameters: {
+        		  		  lightDuration: 0, // 光照时长（本实验未涉及）
+        		  		  lightInterval: 0, // 光照间隔（本实验未涉及）
+        		  		  oxygenDuration: this.oxygenDuration, // 通氧时长
+        		  		  oxygenInterval: this.oxygenInterval, // 通氧间隔
+        		  		},
+        		  	},
+        		  	header: {
+        		  		"Content-Type": "application/json",
+        		  	},
+        		  };
+	  
       try {
         // 调用接口
-        const res = await uni.request({
-          url: "/system/plantGrowth/adjustParameters", // 添加 system 前缀
-          method: "POST",
-          data: params,
-          header: {
-            "Content-Type": "application/json",
-          },
-        });
-
+        const res = await request(params);
+		console.log('后端返回的数据：', res);
         // 处理接口返回的数据
-        if (res.data.code === 1) {
-          this.feedback = res.data.data.feedback;
-          uni.showToast({
-            title: "提交成功",
-            icon: "success",
-          });
-        } else {
-          uni.showToast({
-            title: "提交失败，请重试",
-            icon: "none",
-          });
-        }
-      } catch (error) {
-        console.error("接口调用失败：", error);
-        uni.showToast({
-          title: "网络错误，请重试",
-          icon: "none",
+        if (res.evaluation_result) {
+        			this.feedback = res.evaluation_result;
+        			uni.showToast({
+        				title: "提交成功",
+        				icon: "success",
+        			});
+        		} else {
+        			uni.showToast({
+        				title: "提交失败，请重试",
+        				icon: "none",
+        			});
+        		}
+        	} catch (error) {
+        		console.error("接口调用失败：", error);
+        		uni.showToast({
+        			title: "网络错误，请重试",
+        			icon: "none",
         });
       }
     },
@@ -420,5 +480,12 @@ export default {
 .video-button:hover {
   transform: translateY(-5rpx);
   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+.video-player {
+  width: 100%; /* 宽度占满父容器 */
+  height: 400rpx; /* 设置一个合适的高度 */
+  border-radius: 20rpx; /* 圆角 */
+  overflow: hidden; /* 隐藏超出部分 */
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2); /* 阴影效果 */
 }
 </style>
