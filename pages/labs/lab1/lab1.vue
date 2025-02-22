@@ -20,6 +20,8 @@
       </text>
     </view>
 
+
+
     <!-- 实验区 -->
     <view class="section experiment-area brightness-control">
       <view class="title-box">
@@ -60,11 +62,29 @@
         <view class="title-box">
           <text class="title">📊 系统反馈</text>
         </view>
-        <text class="feedback-score">⭐ 打分：{{ feedback.score }}</text>
-        <text class="feedback-suggestion">💡 建议：{{ feedback.suggestions }}</text>
+        <view class="feedback-score">⭐ 总评分：{{ feedback.total_score }}</view>
+        <view class="feedback-score">🌞 光照时长评分：{{ feedback.scores.lightDuration }}</view>
+        <view class="feedback-score">⏳ 光照间隔评分：{{ feedback.scores.lightInterval }}</view>
+        <text class="feedback-suggestion">💡 建议：{{ feedback.feedback }}</text>
       </view>
     </view>
 
+	<view class="section">
+	  <view class="title-box">
+	    <text class="title">📺 教学视频</text>
+	  </view>
+	  <view class="container">
+	    <!-- 视频组件 -->
+	    <video
+	      :src="videoUrl"
+	      controls
+	      class="video-player"
+	      v-if="videoUrl"
+	    ></video>
+	    <text v-else class="loading-text">加载视频中...</text>
+	  </view>
+	</view>
+	
     <!-- 跳转到视频直播板块 -->
     <view class="section">
       <button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
@@ -105,6 +125,9 @@
 </template>
 
 <script>
+import flask from '@/request/124flask.js';
+import request from '@/request/respberry.js';
+	
 export default {
   data() {
     return {
@@ -113,43 +136,37 @@ export default {
       feedback: null, // 系统反馈
       comments: [], // 评论列表
       newCommentContent: "", // 新评论内容
+	  videoUrl: "", // 视频 URL
     };
   },
   created() {
     this.fetchComments(); // 页面加载时获取评论列表
+	this.getvideo(); // Call the function to get the video URL on component creation
+	console.log("组件创建");
   },
   methods: {
-    // 提交参数
-    async submitParameters() {
+	  
+    async getvideo() {
       const params = {
-        userid: 1, // 用户ID（可根据实际需求修改）
-        plantid: 1, // 植物ID（可根据实际需求修改）
-        parameters: {
-          lightDuration: this.lightDuration,
-          lightInterval: this.lightInterval,
-          oxygenDuration: 0, // 通氧时长（本实验未涉及）
-          oxygenInterval: 0, // 通氧间隔（本实验未涉及）
+        url: "/teach_video", // 完整的接口URL
+        method: "POST",
+        data: {
+          video_id: "5" // 传递视频ID，如果不需要可以去掉
+        },
+        header: {
+          "Content-Type": "application/json",
         },
       };
-
+    
       try {
         // 调用接口
-        const res = await uni.request({
-          url: "/system/plantGrowth/adjustParameters", // 添加 system 前缀
-          method: "POST",
-          data: params,
-          header: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        // 处理接口返回的数据
-        if (res.data.code === 1) {
-          this.feedback = res.data.data.feedback;
-          uni.showToast({
-            title: "提交成功",
-            icon: "success",
-          });
+        const res = await flask(params);
+        console.log('后端返回的数据：', res);
+        
+        // 确保这里的字段名为 videoUrl
+        if (res && res.videoUrl) {
+          this.videoUrl = res.videoUrl; // 使用 videoUrl
+          console.log('视频URL:', this.videoUrl); // 确认视频 URL
         } else {
           uni.showToast({
             title: "提交失败，请重试",
@@ -164,7 +181,52 @@ export default {
         });
       }
     },
-
+		
+    // 提交参数
+    async submitParameters() {
+      const params = {
+  		  url: "/plantGrowth/adjustLightParameters",
+  		  	method: "POST",
+  		  	data: {
+  		  		userid: 1, // 用户ID（可根据实际需求修改）
+  		  		plantid: 1, // 植物ID（可根据实际需求修改）
+  		  		parameters: {
+  		  		  lightDuration: this.lightDuration,
+  		  		  lightInterval: this.lightInterval,
+  		  		  oxygenDuration: 0, // 通氧时长（本实验未涉及）
+  		  		  oxygenInterval: 0, // 通氧间隔（本实验未涉及）
+  		  		},
+  		  	},
+  		  	header: {
+  		  		"Content-Type": "application/json",
+  		  	},
+  		  };
+  		  
+      try {
+        // 调用接口
+        const res = await request(params);
+  		console.log('后端返回的数据：', res);
+        // 处理接口返回的数据
+       if (res.evaluation_result) {
+       			this.feedback = res.evaluation_result;
+       			uni.showToast({
+       				title: "提交成功",
+       				icon: "success",
+       			});
+       		} else {
+       			uni.showToast({
+       				title: "提交失败，请重试",
+       				icon: "none",
+       			});
+       		}
+       	} catch (error) {
+       		console.error("接口调用失败：", error);
+       		uni.showToast({
+       			title: "网络错误，请重试",
+       			icon: "none",
+       		});
+       	}
+       },
     // 跳转到视频直播板块
     navigateToVideo() {
       uni.navigateTo({
@@ -279,7 +341,7 @@ export default {
   animation: gradientBackground 15s ease infinite;
   padding: 10rpx;
   min-height: 100vh;
-line-height: 1.5;
+  line-height: 1.5;
 }
 
 .section {
@@ -420,5 +482,14 @@ line-height: 1.5;
 .video-button:hover {
   transform: translateY(-5rpx);
   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+
+/* 视频播放器样式 */
+.video-player {
+  width: 100%; /* 宽度占满父容器 */
+  height: 400rpx; /* 设置一个合适的高度 */
+  border-radius: 20rpx; /* 圆角 */
+  overflow: hidden; /* 隐藏超出部分 */
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2); /* 阴影效果 */
 }
 </style>
