@@ -15,10 +15,10 @@
 			let obj = {
 				userId: this.globalData.userId
 			}
-			autoGreet(obj)
-				.then(res => {
-					console.log("自动问候成功", res)
-				})
+			// autoGreet(obj)
+			// 	.then(res => {
+			// 		console.log("自动问候成功", res)
+			// 	})
 			// uni.navigateTo({
 			// 	url:'/pages/chart_test/chart_test'
 			// })
