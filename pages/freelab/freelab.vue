@@ -1,154 +1,158 @@
 <template>
-	<view class="content">
-		<!-- 自由实验区简介 -->
-		<view class="section head">
-			<view class="title-box">
-				<text class="title">🌱 自由实验区简介</text>
-			</view>
-			<text class="content">
-				在自由实验区中，您可以自由调整光照、氧气浓度、通氧间隔以及查询土壤中的氮、磷、钾含量。通过调整这些参数，您可以观察植物在不同条件下的生长情况，并优化植物的生长环境。自由实验区为您提供了一个全面的实验平台，帮助您更好地理解植物生长的各种影响因素。
-			</text>
-		</view>
+  <view class="content">
+    <!-- 自由实验区简介 -->
+    <view class="section head">
+      <view class="title-box">
+        <div class="icon-text-container">
+          <img src="static/fplant.png" alt="" class="itemImg">
+          <text class="title"> 
+            自由实验区简介
+          </text>
+        </div>
+      </view>
+      <text >
+        在自由实验区中，您可以自由调整光照、氧气浓度、通氧间隔以及查询土壤中的氮、磷、钾含量。通过调整这些参数，您可以观察植物在不同条件下的生长情况，并优化植物的生长环境。自由实验区为您提供了一个全面的实验平台，帮助您更好地理解植物生长的各种影响因素。
+      </text>
+    </view>
 
-		<!-- 实验区 -->
-		<view class="section experiment-area">
-			<view class="title-box">
-				<text class="title">🔬 自由实验区</text>
-			</view>
+    <!-- 实验区 -->
+    <view class="section experiment-area">
+      <view class="title-box">
+        <text class="title">🔬 自由实验区</text>
+      </view>
+      <view class="parameter-group">
+        <!-- 光照时长 -->
+        <view class="input-group">
+          <text class="label">🌞 光照时长（小时）：</text>
+          <slider v-model="lightDuration" min="0" max="24" step="1" show-value activeColor="#10B078" />
+        </view>
 
-			<!-- 光照时长 -->
-			<view class="input-group">
-				<text class="label">🌞 光照时长（小时）：</text>
-				<slider v-model="lightDuration" min="0" max="24" step="1" show-value activeColor="#10B078" />
-			</view>
+        <!-- 光照间隔 -->
+        <view class="input-group">
+          <text class="label">⏳ 光照间隔（分钟）：</text>
+          <slider v-model="lightInterval" min="0" max="120" step="10" show-value activeColor="#10B078" />
+        </view>
 
-			<!-- 光照间隔 -->
-			<view class="input-group">
-				<text class="label">⏳ 光照间隔（分钟）：</text>
-				<slider v-model="lightInterval" min="0" max="120" step="10" show-value activeColor="#10B078" />
-			</view>
+        <!-- 氧气浓度 -->
+        <view class="input-group">
+          <text class="label">🌬️ 通氧时长（小时）：</text>
+          <slider v-model="oxygenConcentration" min="0" max="24" step="1" show-value activeColor="#10B078" />
+        </view>
 
-			<!-- 氧气浓度 -->
-			<view class="input-group">
-				<text class="label">🌬️ 通氧时长（小时）：</text>
-				<slider v-model="oxygenConcentration" min="0" max="24" step="1" show-value activeColor="#10B078" />
-			</view>
+        <!-- 通氧间隔 -->
+        <view class="input-group">
+          <text class="label">⏳ 通氧间隔（分钟）：</text>
+          <slider v-model="oxygenInterval" min="0" max="120" step="10" show-value activeColor="#10B078" />
+        </view>
+      </view>
 
-			<!-- 通氧间隔 -->
-			<view class="input-group">
-				<text class="label">⏳ 通氧间隔（分钟）：</text>
-				<slider v-model="oxygenInterval" min="0" max="120" step="10" show-value activeColor="#10B078" />
-			</view>
+      <!-- 提交按钮 -->
+      <button @click="submitParameters" class="submit-button">🚀 提交</button>
 
+      <!-- 反馈结果 -->
+      <view v-if="feedback" class="feedback">
+        <view class="title-box">
+          <text class="title">📊 系统反馈</text>
+        </view>
+        <view class="feedback-score">⭐ 总评分：{{ feedback.total_score }}</view>
+        <view class="feedback-score">🌞 光照时长评分：{{ feedback.scores.lightDuration }}</view>
+        <view class="feedback-score">⏳ 光照间隔评分：{{ feedback.scores.lightInterval }}</view>
+        <view class="feedback-score">🌬️ 通氧时长评分：{{ feedback.scores.oxygenDuration }}</view>
+        <view class="feedback-score">⏳ 通氧间隔评分：{{ feedback.scores.oxygenInterval }}</view>
+        <view class="feedback-suggestion">💡 建议：{{ feedback.feedback }}</view>
+      </view>
 
+    </view>
 
+    <!-- 查询结果 -->
+    <view v-if="soilData" class="feedback">
+      <view class="title-box">
+        <text class="title">📊 土壤微量元素含量</text>
+      </view>
+      <!-- 氮磷钾元素三色折线图 -->
+      <view class="chart-container">
+        <view class="charts-box">
+          <qiun-data-charts type="line" :opts="elementOPT" :chartData="elementData" :ontouch="true" />
+        </view>
+      </view>
+      <!-- 查询土壤数据相关操作框 -->
+      <view class="parameter-group">
+        <!-- 查询时间 -->
+        <view class="input-group">
+          <text class="label">📅 查询时间：</text>
+          <picker mode="date" :value="queryDate" :start="startDate" :end="endDate" @change="onDateChange">
+            <view class="picker">{{ queryDate }}</view>
+          </picker>
+        </view>
 
-			<!-- 提交按钮 -->
-			<button @click="submitParameters" class="submit-button">🚀 提交</button>
-			
-			<!-- 反馈结果 -->
-			<view v-if="feedback" class="feedback">
-				<view class="title-box">
-					<text class="title">📊 系统反馈</text>
-				</view>
-				<view class="feedback-score">⭐ 总评分：{{ feedback.total_score }}</view>
-				<view class="feedback-score">🌞 光照时长评分：{{ feedback.scores.lightDuration }}</view>
-				<view class="feedback-score">⏳ 光照间隔评分：{{ feedback.scores.lightInterval }}</view>
-				<view class="feedback-score">🌬️ 通氧时长评分：{{ feedback.scores.oxygenDuration }}</view>
-				<view class="feedback-score">⏳ 通氧间隔评分：{{ feedback.scores.oxygenInterval }}</view>
-				<view class="feedback-suggestion">💡 建议：{{ feedback.feedback }}</view>
-			</view>
-			
-			<!-- 查询时间 -->
-			<view class="input-group">
-				<text class="label">📅 查询时间：</text>
-				<picker mode="date" :value="queryDate" :start="startDate" :end="endDate" @change="onDateChange">
-					<view class="picker">{{ queryDate }}</view>
-				</picker>
-			</view>
-			
-			<!-- 查询土壤数据按钮 -->
-			<button @click="fetchSoilData" class="submit-button">🔍 查询土壤数据</button>
+        <!-- 查询土壤数据按钮 -->
+        <button @click="fetchSoilData" class="submit-button">🔍 查询土壤数据</button>
+      </view>
+    </view>
+	<br>
 
+    <view class="section photo-box">
+      <view class="title-box">
+        <text class="title">📷 植物生长记录</text>
+      </view>
 
+      <!-- 开启定期拍照按钮 -->
+      <button @click="capturePhoto" class="submit-button">📸 开启定期拍照</button>
 
-			<!-- 查询结果 -->
-				<view>
-				<view v-if="soilData" class="feedback">
-					<view class="title-box">
-						<text class="title">📊 土壤微量元素含量</text>
-					</view>
-					<!-- 氮磷钾元素三色折线图 -->
-					<view class="chart-container">
-						<view class="charts-box">
-							<qiun-data-charts type="line" :opts="elementOPT" :chartData="elementData" :ontouch="true" />
-						</view>
-					</view>
-				</view>
-			</view>
-	
-		
-		 <view class="section photo-box">
-		      <view class="title-box">
-		        <text class="title">📷 植物生长记录</text>
-		      </view>
-		
-		      <!-- 开启定期拍照按钮 -->
-		      <button @click="capturePhoto" class="submit-button">📸 开启定期拍照</button>
-		
-		      <!-- 图片展示区 -->
-		      <view v-if="capturedPhotoUrl" class="photo-display">
-		        <image :src="capturedPhotoUrl" mode="aspectFit" class="photo" />
-		      </view>
-		
-		      <!-- 开启植培点滴按钮 -->
-		      <button @click="generatePhotos" class="submit-button">🌱 开启植培点滴</button>
-		
-		      <!-- 植培点滴图片展示区 -->
-		      <view v-if="generatedPhotoUrls.length > 0" class="photo-display">
-		        <view class="photo-grid">
-		          <image
-		            v-for="(url, index) in generatedPhotoUrls"
-		            :key="index"
-		            :src="url"
-		            mode="aspectFit"
-		            class="photo"
+      <!-- 图片展示区 -->
+      <view v-if="capturedPhotoUrl" class="photo-display">
+        <image :src="capturedPhotoUrl" mode="aspectFit" class="photo" />
+      </view>
 
-		          />
-		        </view>
-		      </view>
-		    </view>
-		
-		<!-- 跳转到视频直播板块 -->
-		<view class="section">
-			<button @click="navigateToVideo" class="video-button item">📺 进入视频直播</button>
-		</view>
+      <!-- 开启植培点滴按钮 -->
+      <button @click="generatePhotos" class="submit-button">🌱 开启植培点滴</button>
 
-		<!-- 评论区 -->
-		<view class="section">
-			<view class="title-box">
-				<text class="title">💬 评论区</text>
-			</view>
-			<view v-if="comments.length > 0">
-				<view v-for="(comment, index) in comments" :key="index" class="comment-item">
-					<text class="comment-content">{{ comment.content }}</text>
-					<text class="comment-info">
-						评论人：{{ comment.user_name }} | 时间：{{ comment.created_time }}
-					</text>
-				</view>
-			</view>
-			<view v-else class="no-comments">
-				<text>暂无评论，快来发表你的看法吧！</text>
-			</view>
+      <!-- 植培点滴图片展示区 -->
+      <view v-if="generatedPhotoUrls.length > 0" class="photo-display">
+        <view class="photo-grid">
+          <image
+            v-for="(url, index) in generatedPhotoUrls"
+            :key="index"
+            :src="url"
+            mode="aspectFit"
+            class="photo"
+          />
+        </view>
+      </view>
+    </view>
 
-			<!-- 发表评论 -->
-			<view class="comment-input">
-				<textarea v-model="newCommentContent" placeholder="请输入评论内容" class="textarea" />
-				<button @click="submitComment" class="submit-button">💬 发表评论</button>
-			</view>
-		</view>
-	</view>
-		</view>
+    <!-- 跳转到视频直播板块 -->
+    <view class="section">
+      <view class="title-box">
+        <text class="title">📺 视频直播</text>
+      </view>
+      <button @click="navigateToVideo" class="video-button item">📺 快来看看你的植物长势如何</button>
+    </view>
+
+    <!-- 评论区 -->
+    <view class="section">
+      <view class="title-box">
+        <text class="title">💬 评论区</text>
+      </view>
+      <view v-if="comments.length > 0">
+        <view v-for="(comment, index) in comments" :key="index" class="comment-item">
+          <text class="comment-content">{{ comment.content }}</text>
+          <text class="comment-info">
+            评论人：{{ comment.user_name }} | 时间：{{ comment.created_time }}
+          </text>
+        </view>
+      </view>
+      <view v-else class="no-comments">
+        <text>暂无评论，快来发表你的看法吧！</text>
+      </view>
+
+      <!-- 发表评论 -->
+      <view class="comment-input">
+        <textarea v-model="newCommentContent" placeholder="请输入评论内容" class="textarea" />
+        <button @click="submitComment" class="submit-button">💬 发表评论</button>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script>
@@ -509,216 +513,210 @@
 </script>
 
 <style>
-	/* 蓝绿色渐变背景动画 */
-	@keyframes gradientBackground {
-		0% {
-			background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-		}
-
-		25% {
-			background: linear-gradient(135deg, #80deea, #4dd0e1);
-		}
-
-		50% {
-			background: linear-gradient(135deg, #26c6da, #00bcd4);
-		}
-
-		75% {
-			background: linear-gradient(135deg, #80deea, #4dd0e1);
-		}
-
-		100% {
-			background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-		}
-	}
-
-	.content {
-		animation: gradientBackground 15s ease infinite;
-		padding: 10rpx;
-		min-height: 100vh;
-		line-height: 1.5;
-	}
-
-	.section {
-		margin-bottom: 40rpx;
-		background-color: rgba(255, 255, 255, 0.8);
-		border-radius: 20rpx;
-		box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
-		backdrop-filter: blur(10rpx);
-		padding: 20rpx;
-	}
-
-	.title-box {
-		background-color: #10B078;
-		padding: 20rpx;
-		border-radius: 20rpx;
-		margin-bottom: 20rpx;
-	}
-
-	.title {
-		font-size: 36rpx;
-		font-weight: bold;
-		color: #fff;
-		line-height: 1.8;
-	}
-
-	.content-text {
-		font-size: 18px;
-		color: #555;
-		line-height: 1.8;
-		padding: 20px;
-	}
-
-	.experiment-area {
-		background-color: rgba(255, 255, 255, 0.8);
-		padding: 20rpx;
-		border-radius: 20rpx;
-	}
-
-	.input-group {
-		margin-bottom: 30rpx;
-	}
-
-	.label {
-		font-size: 28rpx;
-		color: #10B078;
-		margin-bottom: 10rpx;
-		line-height: 1.6;
-	}
-
-	.submit-button {
-		background-color: #10B078;
-		color: #fff;
-		font-size: 28rpx;
-		padding: 20rpx;
-		border-radius: 20rpx;
-		text-align: center;
-		margin: 20rpx 0;
-		box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		line-height: 1.5;
-	}
-
-	.submit-button:hover {
-		transform: translateY(-5rpx);
-		box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
-	}
-
-	.feedback {
-		margin-top: 20rpx;
-		padding: 20rpx;
-		background-color: rgba(255, 255, 255, 0.8);
-		border-radius: 20rpx;
-		box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
-	}
-
-	.feedback-score,
-	.feedback-suggestion {
-		font-size: 28rpx;
-		color: #555;
-		margin-bottom: 10rpx;
-		line-height: 1.6;
-	}
-
-	.comment-item {
-		padding: 20rpx;
-		border-bottom: 1rpx solid #eee;
-	}
-
-	.comment-content {
-		font-size: 28rpx;
-		color: #555;
-		margin-bottom: 10rpx;
-		line-height: 1.6;
-	}
-
-	.comment-info {
-		font-size: 24rpx;
-		color: #888;
-		line-height: 1.6;
-	}
-
-	.no-comments {
-		text-align: center;
-		padding: 20rpx;
-		font-size: 28rpx;
-		color: #666;
-		line-height: 1.6;
-	}
-
-	.comment-input {
-		margin-top: 20rpx;
-	}
-
-	.textarea {
-		width: 100%;
-		padding: 20rpx;
-		border: 1rpx solid #ddd;
-		border-radius: 20rpx;
-		margin-bottom: 20rpx;
-		font-size: 28rpx;
-		height: 200rpx;
-		line-height: 1.6;
-	}
-	.chart-container {
-	    width: 100%;
-	    height: 400px;
-	}
-	
-	.charts-box {
-	    width: 100%;
-	    height: 100%;
-	}
-	
-	.photo-box {
-	    margin-bottom: 40rpx;
-	    background-color: rgba(255, 255, 255, 0.8);
-	    border-radius: 20rpx;
-	    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
-	    padding: 20rpx;
-	  }
-	
-	  .photo-display {
-	    margin-top: 20rpx;
-	  }
-	
-	  .photo {
-	    width: 100%;
-	    height: 300rpx;
-	    border-radius: 10rpx;
-	    margin-bottom: 10rpx;
-	  }
-	
-	  .photo-grid {
-	    display: flex;
-	    flex-wrap: wrap;
-	    gap: 10rpx;
-	  }
-	
-	  .photo-grid .photo {
-	    width: calc(50% - 5rpx);
-	    height: 200rpx;
-	  }
-	
-	  .photo-grid .photo.selected {
-	    border: 4rpx solid #10B078;
-	  }
-	  
-	.video-button {
-		background-color: #FFA500;
-		color: #fff;
-		font-size: 28rpx;
-		padding: 20rpx;
-		border-radius: 20rpx;
-		text-align: center;
-		margin: 20rpx 0;
-		box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		line-height: 1.5;
-	}
-
-	.video-button:hover {
-		transform: translateY(-5rpx);
-		box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
-	}
+ .content {
+   padding: 10rpx;
+   min-height: 100vh;
+   line-height: 1.5;
+   background-image: url('../../static/fback.jpg'); /* 仅保留背景图片 */
+   background-size: cover;
+   background-repeat: no-repeat;
+ }
+ 
+ .icon-text-container {
+   display: flex;
+   align-items: center;
+ }
+ 
+ .itemImg {
+   width: 50rpx;
+   height: 50rpx;
+ }
+ 
+ .section {
+   margin-bottom: 60rpx;
+   background-color: rgba(255, 255, 255, 0.8);
+   border-radius: 20rpx;
+   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+   backdrop-filter: blur(10rpx);
+   padding: 20rpx;
+ }
+ 
+ .title-box {
+   background-color: #10B078;
+   padding: 20rpx;
+   border-radius: 20rpx;
+   margin-bottom: 20rpx;
+ }
+ 
+ .title {
+   font-size: 36rpx;
+   font-weight: bold;
+   color: #fff;
+   line-height: 1.8;
+   text-align: left;
+ }
+ 
+ .content-text {
+   font-size: 18px;
+   color: #555;
+   line-height: 1.8;
+   padding: 20px;
+ }
+ 
+ .experiment-area {
+   background-color: rgba(255, 255, 255, 0.8);
+   padding: 20rpx;
+   border-radius: 20rpx;
+ }
+ 
+ .input-group {
+   margin-bottom: 30rpx;
+ }
+ 
+ .label {
+   font-size: 28rpx;
+   color: #10B078;
+   margin-bottom: 10rpx;
+   line-height: 1.6;
+ }
+ 
+ .submit-button {
+   background-color: #81D4FA;
+   color: #000;
+   font-size: 28rpx;
+   padding: 20rpx;
+   border-radius: 20rpx;
+   text-align: center;
+   margin: 20rpx auto;
+   box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+   transition: transform 0.3s ease, box-shadow 0.3s ease;
+   line-height: 1.5;
+   display: block;
+ }
+ 
+ .feedback {
+   margin-top: 20rpx;
+   padding: 20rpx;
+   background-color: rgba(255, 255, 255, 0.8);
+   border-radius: 20rpx;
+   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+ }
+ 
+ .feedback-score,
+ .feedback-suggestion {
+   font-size: 28rpx;
+   color: #555;
+   margin-bottom: 10rpx;
+   line-height: 1.6;
+ }
+ 
+ .comment-item {
+   padding: 20rpx;
+   border-bottom: 1rpx solid #eee;
+ }
+ 
+ .comment-content {
+   font-size: 28rpx;
+   color: #555;
+   margin-bottom: 10rpx;
+   line-height: 1.6;
+ }
+ 
+ .comment-info {
+   font-size: 24rpx;
+   color: #888;
+   line-height: 1.6;
+ }
+ 
+ .no-comments {
+   text-align: center;
+   padding: 20rpx;
+   font-size: 28rpx;
+   color: #666;
+   line-height: 1.6;
+ }
+ 
+ .comment-input {
+   margin-top: 20rpx;
+ }
+ 
+ .textarea {
+   width: 100%;
+   padding: 20rpx;
+   border: 1rpx solid #ddd;
+   border-radius: 20rpx;
+   margin-bottom: 20rpx;
+   font-size: 28rpx;
+   height: 200rpx;
+   line-height: 1.6;
+ }
+ 
+ .chart-container {
+   width: 100%;
+   height: 400px;
+ }
+ 
+ .charts-box {
+   width: 100%;
+   height: 100%;
+ }
+ 
+ .photo-box {
+   margin-bottom: 40rpx;
+   background-color: rgba(255, 255, 255, 0.8);
+   border-radius: 20rpx;
+   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+   padding: 20rpx;
+ }
+ 
+ .photo-display {
+   margin-top: 20rpx;
+ }
+ 
+ .photo {
+   width: 100%;
+   height: 300rpx;
+   border-radius: 10rpx;
+   margin-bottom: 10rpx;
+ }
+ 
+ .photo-grid {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10rpx;
+ }
+ 
+ .photo-grid.photo {
+   width: calc(50% - 5rpx);
+   height: 200rpx;
+ }
+ 
+ .photo-grid.photo.selected {
+   border: 4rpx solid #10B078;
+ }
+ 
+ .video-button {
+   background-color: #81D4FA;
+   color: #000;
+   font-size: 28rpx;
+   padding: 20rpx;
+   border-radius: 20rpx;
+   text-align: center;
+   margin: 20rpx auto;
+   box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+   transition: transform 0.3s ease, box-shadow 0.3s ease;
+   line-height: 1.5;
+   display: block;
+ }
+ 
+ .video-button:hover {
+   transform: translateY(-5rpx);
+   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+ }
+ 
+ .parameter-group {
+   background-color: #f4f4f4;
+   padding: 20rpx;
+   border-radius: 10rpx;
+ }
 </style>

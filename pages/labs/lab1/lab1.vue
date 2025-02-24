@@ -142,7 +142,6 @@ export default {
   created() {
     this.fetchComments(); // 页面加载时获取评论列表
 	this.getvideo(); // Call the function to get the video URL on component creation
-	console.log("组件创建");
   },
   methods: {
 	  
