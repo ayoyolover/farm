@@ -7,20 +7,21 @@
             <img src="static/lab.png" alt="" class="itemImg">
             <text ref="text1">教学实验</text>	
           </view>
-          <view class="circle-button" ref="button2" @click="navRight">
-            <img src="static/talk.png" alt="" class="itemImg">
-            <text ref="text2">知识宝库</text>
-          </view>
+		  <view class="circle-button" ref="button3" @click="goFreeLab">
+		    <img src="static/freelab.png" alt="" class="itemImg">
+		    <text ref="text3">自由实验</text>
+		  </view>
+          
         </view>
       </view>
     </view>
     <view class="lower-section">
       <view class="button-container">
         <view class="button-group">
-          <view class="circle-button" ref="button3" @click="goFreeLab">
-            <img src="static/freelab.png" alt="" class="itemImg">
-            <text ref="text3">自由实验</text>
-          </view>
+			<view class="circle-button" ref="button2" @click="navRight">
+			  <img src="static/talk.png" alt="" class="itemImg">
+			  <text ref="text2">知识宝库</text>
+			</view>
           <view class="circle-button" ref="button4" @click="goKnowledge">
             <img src="static/knowledge.png" alt="" class="itemImg">
             <text ref="text4">互动问答</text>
