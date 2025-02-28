@@ -1,72 +1,84 @@
 <template>
 	<view class="farm-container">
 		<!-- 农场背景 -->
-		<image src="/static/sow/back.png" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;"></image>
+		<view class="video-container">
+			<iframe src="http://192.168.1.109:8081" class="video"></iframe>
+		</view>
+		<view>
+			<image src="/static/sow/back.png"
+				style="position: fixed; top: 240px; left: 0; width: 100%; height: calc(100vh - 240px); object-fit: cover;">
+			</image>
 
-		<!-- 可折叠工具栏 -->
-		<view class="collapsible-toolbar" v-bind:style="{ height: isToolbarOpen ? '180rpx' : '50rpx' }">
-			<view class="toolbar-header" @click="toggleToolbar">
-				<image src="/static/icons/arrow-down.png" class="toggle-icon" v-if="!isToolbarOpen" />
-				<image src="/static/icons/arrow-up.png" class="toggle-icon" v-if="isToolbarOpen" />
+			<!-- 可折叠工具栏 -->
+			<view class="collapsible-toolbar" v-bind:style="{ height: isToolbarOpen ? '180rpx' : '50rpx' }">
+				<view class="toolbar-header" @click="toggleToolbar">
+					<image src="/static/icons/arrow-down.png" class="toggle-icon" v-if="!isToolbarOpen" />
+					<image src="/static/icons/arrow-up.png" class="toggle-icon" v-if="isToolbarOpen" />
+				</view>
+
+				<!-- 显示按钮的区域 -->
+				<view class="change" v-show="isToolbarOpen">
+					<view class="changeItem" @click="handleLED" @touchstart="onDragStart" @touchmove="onDragMove"
+						@touchend="onDragEnd">
+						<image :src="isLed ? '/static/monitor/light-on.png' : '/static/monitor/light-off.png'"
+							class="icon drag-item" :style="dragging ? imageStyle : {}"
+							@touchstart="onImageTouchStart" />
+						<view class="text">{{ isLed ? '补光中' : '点击补光' }}</view>
+					</view>
+
+					<view class="changeItem" @click="handleOx" @touchstart="onDragStart" @touchmove="onDragMove"
+						@touchend="onDragEnd">
+						<image :src="isOx ? '/static/monitor/Oxygen-on.png' : '/static/monitor/Oxygen-off.png'"
+							class="icon drag-item" :style="dragging ? imageStyle : {}"
+							@touchstart="onImageTouchStart" />
+						<view class="text">{{ isOx ? '供氧中' : '点击供氧' }}</view>
+					</view>
+				</view>
+
+			</view>
+			<!-- 单个植物 -->
+			<view class="plant target" @click="handlePlantClick"
+				style="position: absolute; top: 83%; left: 56%; transform: translate(-50%, -50%); text-align: center; cursor: pointer; transition: transform 0.3s ease; z-index: 2;">
+				<image :src="currentPlant.image" style="width: 150rpx; height: 150rpx;" />
 			</view>
 
-			<!-- 显示按钮的区域 -->
-			<view class="change" v-show="isToolbarOpen">
-				<view class="changeItem" @click="handleLED" @touchstart="onDragStart" @touchmove="onDragMove"
-					@touchend="onDragEnd">
-					<image :src="isLed ? '/static/monitor/light-off.png' : '/static/monitor/light-on.png'"
-						class="icon drag-item" :style="dragging ? imageStyle : {}" @touchstart="onImageTouchStart" />
-					<view class="text">灯光</view>
-				</view>
-				<view class="changeItem" @click="handleOx" @touchstart="onDragStart" @touchmove="onDragMove"
-					@touchend="onDragEnd">
-					<image :src="isOx ? '/static/monitor/Oxygen-off.png' : '/static/monitor/Oxygen-on.png'"
-						class="icon drag-item" :style="dragging ? imageStyle : {}" @touchstart="onImageTouchStart" />
-					<view class="text">供氧</view>
-				</view>
+			<!-- 交互提示 -->
+			<view class="interaction-hint" v-if="showHint">
+				点击查看生长状态！
 			</view>
-		</view>
-		<!-- 单个植物 -->
-		<view class="plant target" @click="handlePlantClick"
-			style="position: absolute; top: 76%; left: 56%; transform: translate(-50%, -50%); text-align: center; cursor: pointer; transition: transform 0.3s ease; z-index: 2;">
-			<image :src="currentPlant.image" style="width: 150rpx; height: 150rpx;" />
-		</view>
 
-		<!-- 交互提示 -->
-		<view class="interaction-hint" v-if="showHint">
-			点击查看生长状态！
-		</view>
-
-		<!-- 弹出对话框 -->
-		<view class="popup-mask" v-if="showPopup" @click="closePopup">
-			<view class="popup-container" @click.stop>
-				<view class="popup-header">
-					<text class="popup-title">植物生长状态</text>
-				</view>
-				<view class="popup-content">
-					<view class="status-item">
-						<text class="status-label">生命值：</text>
-						<text class="status-value">{{ status.lifeValue }}</text>
+			<!-- 弹出对话框 -->
+			<view class="popup-mask" v-if="showPopup" @click="closePopup">
+				<view class="popup-container" @click.stop>
+					<view class="popup-header">
+						<text class="popup-title">植物生长状态</text>
 					</view>
-					<view class="status-item">
-						<text class="status-label">活力值：</text>
-						<text class="status-value">{{ status.vitality }}</text>
+					<view class="popup-content">
+						<view class="status-item">
+							<text class="status-label">生命值：</text>
+							<text class="status-value">{{ status.lifeValue }}</text>
+						</view>
+						<view class="status-item">
+							<text class="status-label">活力值：</text>
+							<text class="status-value">{{ status.vitality }}</text>
+						</view>
+						<view class="status-item">
+							<text class="status-label">心情：</text>
+							<text class="status-value">{{ status.mood }}</text>
+						</view>
+						<view class="status-item">
+							<text class="status-label">当前阶段：</text>
+							<text class="status-value">{{ status.growthStage }}</text>
+						</view>
+						<view class="status-item">
+							<text class="status-label">植物心声：</text>
+							<text class="status-value">{{ status.growthDesc }}</text>
+						</view>
 					</view>
-					<view class="status-item">
-						<text class="status-label">心情：</text>
-						<text class="status-value">{{ status.mood }}</text>
+					<view class="popup-footer">
+						<button class="popup-close" @click="closePopup">关闭</button>
+						<button class="popup-close" @click="goToDetails">详细数据</button>
 					</view>
-					<view class="status-item">
-						<text class="status-label">当前阶段：</text>
-						<text class="status-value">{{ status.growthStage }}</text>
-					</view>
-					<view class="status-item">
-						<text class="status-label">植物心声：</text>
-						<text class="status-value">{{ status.growthDesc }}</text>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="popup-close" @click="closePopup">关闭</button>
 				</view>
 			</view>
 		</view>
@@ -152,9 +164,9 @@
 				this.startX = touch.pageX;
 				this.startY = touch.pageY;
 				this.dragging = true;
-				if(this.startX <= 180)
+				if (this.startX <= 180)
 					this.touch = 1
-				else if(this.startX > 180)
+				else if (this.startX > 180)
 					this.touch = 2
 				this.baseX = this.startX;
 				this.baseY = this.startY;
@@ -211,9 +223,9 @@
 							this.currentY <= targetRect.bottom
 						) {
 							console.log(this.touch)
-							if(this.touch == 1)
+							if (this.touch == 1)
 								this.handleLED()
-							else if(this.touch == 2)
+							else if (this.touch == 2)
 								this.handleOx()
 							this.touch = 0
 						}
@@ -241,6 +253,11 @@
 			closePopup() {
 				this.showPopup = false;
 			},
+			goToDetails() {
+				uni.navigateTo({
+					url: '/pages/video/video' // 请替换为详细数据页面的路径
+				});
+			},
 			onLoad() {
 				var app = getApp();
 				console.log(app.globalData);
@@ -249,6 +266,29 @@
 						console.log("res", res);
 						this.status = res.data;
 					});
+				uni.request({
+					url: `http://192.168.1.109:5000/search_sensor`,
+					method: 'GET',
+					success: (res) => {
+
+						console.log("设备状态", res)
+						if (res.data.sensors_status[0].status)
+							this.isLed = 1
+						else
+							this.isLed = 0;
+						if (res.data.sensors_status[1].status)
+							this.isOx = 1
+						else
+							this.isOx = 0
+					},
+					fail: (err) => {
+						console.error('请求失败:', err);
+						uni.showToast({
+							title: '请求失败，请检查网络或链接',
+							icon: 'none',
+						});
+					},
+				});
 			},
 			toggleToolbar() {
 				this.isToolbarOpen = !this.isToolbarOpen;
@@ -395,7 +435,7 @@
 	/* 植物 */
 	.plant {
 		position: absolute;
-		top: 75%;
+		top: 88%;
 		left: 55%;
 		transform: translate(-50%, -50%);
 		text-align: center;
@@ -438,6 +478,15 @@
 		100% {
 			opacity: 1;
 		}
+	}
+
+	.video-container {
+		width: 100%;
+	}
+
+	.interaction-hint {
+		position: absolute;
+		bottom: 20rpx;
 	}
 
 	/* 弹出框遮罩 */
@@ -509,6 +558,7 @@
 	}
 
 	.popup-footer {
+		display: flex;
 		margin-top: 30rpx;
 	}
 
@@ -525,5 +575,11 @@
 
 	.popup-close:hover {
 		background: #f0f0f0;
+	}
+
+	.video {
+		width: 100%;
+		height: 240px;
+		object-fit: cover;
 	}
 </style>

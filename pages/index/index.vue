@@ -17,7 +17,7 @@
 		<view class="function">
 			<view class="item" @click="goVideo">
 				<img src="static/farm/chart.png" class="itemImg">
-				<view>数据大屏</view>
+				<view>数据图表</view>
 			</view>
 			<view class="item" @click="goFarming">
 				<img src="static/farm/farming.png" class="itemImg">

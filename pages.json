@@ -1,6 +1,12 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+			"path": "pages/farming/farming",
+			"style": {
+				"navigationBarTitleText": "开心农场"
+			}
+		},
+		{
 			"path": "pages/virtual/virtual",
 			"style": {
 				"navigationBarTitleText": "绿宝"
@@ -27,7 +33,7 @@
 		{
 			"path": "pages/video/video",
 			"style": {
-				"navigationBarTitleText": "视频直播"
+				"navigationBarTitleText": "数据图表"
 			}
 		},
 		{
@@ -125,12 +131,7 @@
 				"navigationBarTitleText": "互动问答"
 			}
 		},
-		{
-			"path": "pages/farming/farming",
-			"style": {
-				"navigationBarTitleText": "开心农场"
-			}
-		},
+
 		{
 			"path": "pages/hello/hello",
 			"style": {
@@ -144,24 +145,21 @@
 			}
 		},
 		{
-			"path" : "pages/store/store",
-			"style" : 
-			{
-				"navigationBarTitleText" : "知识宝库"
+			"path": "pages/store/store",
+			"style": {
+				"navigationBarTitleText": "知识宝库"
 			}
 		},
 		{
-			"path" : "pages/labs/lab5/lab5",
-			"style" : 
-			{
-				"navigationBarTitleText" : "探究植物生长的向光性"
+			"path": "pages/labs/lab5/lab5",
+			"style": {
+				"navigationBarTitleText": "探究植物生长的向光性"
 			}
 		},
 		{
-			"path" : "pages/labs/lab4/lab4",
-			"style" : 
-			{
-				"navigationBarTitleText" : "观察植物的组成结构"
+			"path": "pages/labs/lab4/lab4",
+			"style": {
+				"navigationBarTitleText": "观察植物的组成结构"
 			}
 		}
 	],

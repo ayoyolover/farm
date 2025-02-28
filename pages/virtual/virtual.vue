@@ -1,8 +1,8 @@
 <template>
 	<view class="container">
 		<!-- 背景图片 -->
-		<image src="/static/sow/back.png" class="background-image"></image>
-
+		<!-- <image src="/static/sow/back.png" class="background-image"></image> -->
+		<view id="threeView"></view> <!-- 用于渲染虚拟人 -->
 		<!-- 聊天内容区域 -->
 		<scroll-view :scroll-into-view="scrollToView" scroll-y="true" :style="{ height: windowHeight + 'rpx' }"
 			scroll-with-animation enable-flex="true">
@@ -65,7 +65,151 @@
 		<audio id="audio" :src="audio" ref="audio" @ended="onAudioEnded" style="display: none;"></audio>
 	</view>
 </template>
+<script module="three" lang="renderjs">
+	const THREE = require('static/three/build/three.min.js');
+	import {
+		OrbitControls
+	} from 'static/three/examples/jsm/controls/OrbitControls.js';
+	import {
+		FBXLoader
+	} from 'static/three/examples/jsm/loaders/FBXLoader.js';
+	import {
+		RGBELoader
+	} from 'static/three/examples/jsm/loaders/RGBELoader.js';
 
+	var renderer;
+	var scene, FBXloader;
+	var camera;
+	var controls;
+	let pmremGenerator, envMap;
+	let renderEnabled = false;
+	let timeOut = null;
+
+	export default {
+		mounted() {
+			this.initThree();
+		},
+		methods: {
+			initThree() {
+				let that = this;
+
+				// 创建场景对象Scene
+				scene = new THREE.Scene();
+
+				// 相机设置
+				var width = window.innerWidth; // threeView 的宽度
+				var height = window.innerHeight * 0.9; // threeView 的高度
+				var fov = 62; // 视野范围
+				camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 10000);
+				camera.position.set(0, 0, 65); // 调整相机位置，向后移动并适当提高高度
+				scene.add(camera);
+
+				// 创建渲染器对象
+				const element = document.getElementById('threeView');
+				renderer = new THREE.WebGLRenderer({
+					antialias: true,
+					alpha: true,
+
+				});
+				renderer.physicallyCorrectLights = true;
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(width, height);
+				pmremGenerator = new THREE.PMREMGenerator(renderer);
+				pmremGenerator.compileEquirectangularShader();
+				element.appendChild(renderer.domElement); // 将 canvas 插入到 threeView 中
+
+				// 光源设置
+				const hemiLight = new THREE.HemisphereLight();
+				hemiLight.intensity = 0.3;
+				scene.add(hemiLight);
+
+				const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+				scene.add(ambientLight);
+
+				const light = new THREE.DirectionalLight(0xffffff, 0.3);
+				light.position.set(-10, -1, 60);
+				scene.add(light);
+
+				// 控制器
+				controls = new OrbitControls(camera, renderer.domElement);
+				controls.enablePan = false;
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.05;
+				controls.screenSpacePanning = false;
+				controls.maxPolarAngle = Math.PI / 2;
+
+				// 环境纹理
+				this.getfile("./static/images/venice_sunset_1k.hdr").then((res) => {
+					new RGBELoader()
+						.setDataType(THREE.UnsignedByteType)
+						.load(res, (texture) => {
+							envMap = pmremGenerator.fromEquirectangular(texture).texture;
+							pmremGenerator.dispose();
+							scene.environment = envMap;
+						});
+				});
+
+				// 加载模型
+				FBXloader = new FBXLoader();
+				this.getfile("./static/model/catch.fbx").then((res) => {
+					FBXloader.load(res, (fbx) => {
+						fbx.scale.set(0.2, 0.2, 0.2); // 调整模型缩放比例
+						// fbx.position.set(150, 0, 0); // 将模型向左移动，使其紧贴左下角
+						fbx.position.set(-1, 4, 0); // 将模型向左移动，使其紧贴左下角
+
+						// 创建动画混合器
+						const mixer = new THREE.AnimationMixer(fbx);
+
+						// 检查是否有动画片段
+						if (fbx.animations && fbx.animations.length) {
+							// 获取第一个动画片段
+							const clip = fbx.animations[0];
+							const action = mixer.clipAction(clip);
+
+							// 播放动画的一部分
+							const duration = clip.duration; // 动画总时长
+							const halfDuration = duration / 2; // 动画一半的时长
+
+							// 设置动画只播放前半部分
+							action.timeScale = 1; // 正常播放速度
+							action.play();
+							setTimeout(() => {
+								action.time = halfDuration; // 跳到动画的中间位置
+								action.timeScale = -1; // 设置为倒放
+								action.play();
+							}, halfDuration * 1000); // 等待前半部分播放完成
+						}
+						// 设置相机焦点指向模型中心
+						camera.lookAt(fbx.position);
+
+						scene.add(fbx);
+
+						// 动画更新逻辑
+						function animate() {
+							requestAnimationFrame(animate);
+							controls.update();
+
+							// 更新动画混合器
+							if (mixer) {
+								mixer.update(0.016); // 16ms 的时间步长
+							}
+
+							renderer.render(scene, camera);
+						}
+						animate();
+					});
+				});
+			},
+			getfile(e) {
+				// 文件加载逻辑保持不变
+				return new Promise((resolve, reject) => {
+					resolve(e);
+				});
+			},
+		},
+	};
+</script>
 <script>
 	import {
 		handleOX,
@@ -190,60 +334,114 @@
 							let result = JSON.parse(uploadRes.data).result;
 							console.log("transform", result)
 							// 在这里可以根据后端返回的结果进行处理
-							setTimeout(() => {
-								uni.hideLoading();
-								uni.showLoading({
-									title: '绿宝接收中',
-								});
-							}, 1000);
-							let obj = {
-								plantId: this.globalData.plantId,
-								userId: this.globalData.userId,
-								chatMessage: [{
-									cmFlag: 0,
-									cmContent: result,
-								}],
-							};
-
-							updateFarmerChatMessage(obj)
-								.then(res => {
-									if (res.data) {
-										console.log("更新记录", res)
-										uni.hideLoading()
-										this.chatInfo = res.data[0];
-										uni.hideLoading();
-										uni.showToast({
-											icon: 'success',
-											title: '接收成功',
-											duration: 1000
-										});
-										setTimeout(() => {
-											this.$nextTick(() => {
-												this.scrollToView =
-													`msg${this.chatInfo.chatMessage.length - 1}`;
-											});
-											let data = {
-												text: this.chatInfo.chatMessage[this
-													.chatInfo.chatMessage.length -
-													1].cmContent
-											}
-											// console.log(this.chatInfo.chatMessage[this.chatInfo.chatMessage.length - 1])
-											textToAudio(data)
-												.then(res => {
-													console.log("语音", res)
-													let str = res.audioPath
-													this.audio =
-														"http://124.221.52.73:80" + str
-														.substring(str.indexOf(
-															"/audio"))
-													this.audioDialogVisible =
-														true; // 显示提示对话框
-													// this.audio = "_doc/uniapp_temp_1738861020562/recorder/1738861024154.m4a"
-												})
-										}, 2000);
-
-									}
+							// setTimeout(() => {
+							// 	uni.hideLoading();
+							// 	uni.showLoading({
+							// 		title: '绿宝接收中',
+							// 		duration: 3000
+							// 	});
+							// }, 1000);
+							let obj
+							if(result){
+								obj = {
+									plantId: this.globalData.plantId,
+									userId: this.globalData.userId,
+									chatMessage: [{
+										cmFlag: 0,
+										cmContent: result,
+									}],
+								};
+							}
+							else{
+								uni.hideLoading()
+								uni.showToast({
+									icon:'error',
+									title: "未识别到文字"
 								})
+								setTimeout(() => {
+									uni.hideToast();
+								}, 1000);
+							}
+							//
+							const navigationMap = {
+								'时光剪影': '/pages/clip/clip', // 跳转到时光剪影页面
+								'数据图表': '/pages/video/video', // 跳转到数据图表页面
+								'开心农场': '/pages/farming/farming' // 跳转到开心农场页面
+							};
+							const _navigationMap = {
+								'个人中心': '/pages/my/my', // 跳转到个人中心页面
+								'实验中心': '/pages/edu-main/edu-main', // 跳转到实验中心页面
+								'种植主页': '/pages/index/index', // 跳转到种植主页页面
+							}
+							var flag = 0
+							// 遍历 navigationMap，查找匹配的字符串并跳转
+							for (const [keyword, targetPage] of Object.entries(navigationMap)) {
+								if (result.includes(keyword)) {
+									flag = 1;
+									console.log(targetPage)
+									uni.hideLoading()
+									uni.navigateTo({
+										url: targetPage
+									});
+									break; // 找到匹配的词后跳转，停止继续查找
+								}
+							}
+							for (const [keyword, targetPage] of Object.entries(_navigationMap)) {
+								if (result.includes(keyword)) {
+									flag = 1;
+									console.log(targetPage)
+									uni.hideLoading()
+									uni.switchTab({
+										url: targetPage
+									});
+									break; // 找到匹配的词后跳转，停止继续查找
+								}
+							}
+							if (!flag&&result) {
+								updateFarmerChatMessage(obj)
+									.then(res => {
+										if (res.data) {
+											console.log("更新记录", res)
+											uni.hideLoading()
+											this.chatInfo = res.data[0];
+											uni.hideLoading();
+											uni.showToast({
+												icon: 'success',
+												title: '接收成功',
+												duration: 1000
+											});
+											setTimeout(() => {
+												this.$nextTick(() => {
+													this.scrollToView =
+														`msg${this.chatInfo.chatMessage.length - 1}`;
+												});
+												let data = {
+													text: this.chatInfo.chatMessage[
+														this
+														.chatInfo.chatMessage
+														.length -
+														1].cmContent
+												}
+												// console.log(this.chatInfo.chatMessage[this.chatInfo.chatMessage.length - 1])
+												textToAudio(data)
+													.then(res => {
+														console.log("语音", res)
+														let str = res.audioPath
+														this.audio =
+															"http://124.221.52.73:80" +
+															str
+															.substring(str.indexOf(
+																"/audio"))
+														this.audioDialogVisible =
+															true; // 显示提示对话框
+														// this.audio = "_doc/uniapp_temp_1738861020562/recorder/1738861024154.m4a"
+													})
+											}, 2000);
+
+										}
+									})
+							}
+
 						},
 						fail: (err) => {
 							console.log('上传失败:', err);
@@ -385,7 +583,7 @@
 </script>
 <style>
 	/* 背景图片 */
-	.background-image {
+	/* 	.background-image {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -393,6 +591,17 @@
 		height: 100%;
 		z-index: -1;
 		filter: brightness(0.8);
+	} */
+
+	#threeView {
+		position: absolute;
+		top: 0;
+		/* 距离底部10px */
+		left: 10rpx;
+		/* width: 30%; */
+		/* 宽度为屏幕宽度的30% */
+		/* height: 30%; */
+		/* 高度为屏幕高度的30% */
 	}
 
 	.container {

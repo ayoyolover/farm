@@ -1,19 +1,5 @@
 <template>
 	<view class="container">
-		<view class="video-container">
-			<iframe src="http://192.168.1.109:8081" class="video"></iframe>
-		</view>
-		<view class="change">
-			<view class="changeItem" @click="handleLED">
-				<image :src="isLed ? '/static/monitor/light-off.png' : '/static/monitor/light-on.png'" class="icon" />
-				<view class="text">{{ isLed ? '灯光关闭' : '灯光开启' }}</view>
-			</view>
-			<view class="changeItem" @click="handleOx">
-				<image :src="isOx ? '/static/monitor/Oxygen-off.png' : '/static/monitor/Oxygen-on.png'" class="icon" />
-				<view class="text">{{ isOx ? '供氧关闭' : '供氧开启' }}</view>
-			</view>
-		</view>
-
 		<!-- 图表区域 -->
 		<view class="chart-container">
 			<view class="charts-box">
@@ -268,18 +254,32 @@
 				const day = ('0' + now.getDate()).slice(-2);
 				const hours = ('0' + now.getHours()).slice(-2);
 				this.time = year + ':' + month + ':' + day + ':' + hours;
+				let date = [];
+				const today = new Date();
+
+				// 获取过去7天的日期
+				for (let i = 6; i >= 0; i--) {
+					let tempDate = new Date(today);
+					tempDate.setDate(today.getDate() - i); // 获取当前日期的前 i 天
+					let month = tempDate.getMonth() + 1; // 获取月份，注意月份是从0开始的
+					let day = tempDate.getDate(); // 获取日期
+
+					// 格式化日期为 "月-日" 格式
+					date.push(`${month}-${day}`);
+				}
+
+				console.log(date); // 输出日期数组
 				getPAC(this.time)
 					.then((res) => {
 						const pH = [];
 						const ddl = [];
-						const date = [];
 						res.data.reverse().forEach(item => {
 							if (item.staValue && item.staTime) {
 								pH.push(item.staValue['酸碱度']);
 								ddl.push(item.staValue['电导率']);
-								date.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
-									.slice(8,
-										10)));
+								// date.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
+								// 	.slice(8,
+								// 		10)));
 							}
 						});
 						// 更新lineData
@@ -300,7 +300,7 @@
 				getNPK(this.time)
 					.then((res) => {
 						console.log(res)
-						const date = [];
+						// const date = [];
 						const temp = [];
 						const mid = [];
 						const N = [];
@@ -313,9 +313,9 @@
 								K.push(item.staValue['土壤钾']);
 								temp.push(item.staValue['温度']);
 								mid.push(item.staValue['湿度']);
-								date.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
-									.slice(8,
-										10)));
+								// date.push(Number(item.staTime.slice(5, 7)) + '.' + Number(item.staTime
+								// 	.slice(8,
+								// 		10)));
 							}
 						});
 
@@ -414,16 +414,6 @@
 		/* 背景色动态变化，速度变慢 */
 		min-height: 100vh;
 		padding: 20rpx;
-	}
-
-	.video {
-		width: 100%;
-		height: 240px;
-		object-fit: cover;
-	}
-
-	.video-container {
-		width: 100%;
 	}
 
 	.change {

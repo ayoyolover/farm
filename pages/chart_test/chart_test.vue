@@ -1,6 +1,6 @@
 <template>
 	<view class="container">
-		<text class="counter">计数器：{{ counter }}</text>
+		<text id="123" class="counter">计数器：{{ counter }}</text>
 		<view class="drag-area" :style="{ backgroundColor: isDropped ? 'lightgreen' : 'lightgray' }"
 			@touchstart="onDragStart" @touchmove="onDragMove" @touchend="onDragEnd">
 			<text>将图片拖拽到这里！</text>
@@ -37,6 +37,8 @@
 		},
 		methods: {
 			onReady(){
+				const item=document.getElementById("123")
+				console.log(item)
 				const query = uni.createSelectorQuery().in(this);
 				query.select('.drag-item').boundingClientRect((rect) => {
 					if (rect) {
